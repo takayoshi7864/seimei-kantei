@@ -1077,10 +1077,43 @@ function labelTables(root){
   });
 }
 for(const id of ['result','qres','kres']){ const el=document.getElementById(id); if(el) new MutationObserver(()=>labelTables(el)).observe(el,{childList:true}); }
+/* 読みの自動入力：漢字を日本語入力（IME）で打つとき、変換前のかな（読み）を覚えて、読みの欄に入れる */
+const AUTOKANA = {pairs:{}, last:'', manual:false};
+(function(){
+  const full=document.getElementById('full'), yomi=document.getElementById('yomi');
+  const isKana=t=>/^[ぁ-ゖァ-ヺー]+$/.test(t);
+  full.addEventListener('compositionstart',()=>{ AUTOKANA.last=''; });
+  full.addEventListener('compositionupdate',e=>{ if(isKana(e.data||'')) AUTOKANA.last=e.data; });
+  full.addEventListener('compositionend',e=>{
+    const t=e.data||''; if(t && AUTOKANA.last && t!==AUTOKANA.last) AUTOKANA.pairs[t]=AUTOKANA.last;
+    AUTOKANA.last=''; fill();
+  });
+  full.addEventListener('input',e=>{ if(!e.isComposing) fill(); });
+  yomi.addEventListener('input',()=>{ AUTOKANA.manual = yomi.value.trim()!==''; });
+  function tokenReading(tok){                       // 記録した（漢字→読み）の組み合わせで、この語を組み立てる
+    const keys=Object.keys(AUTOKANA.pairs).sort((x,y)=>y.length-x.length), memo={};
+    const go=i=>{ if(i===tok.length) return ''; if(i in memo) return memo[i];
+      let r=null;
+      for(const k of keys){ if(tok.startsWith(k,i)){ const rest=go(i+k.length); if(rest!==null){ r=AUTOKANA.pairs[k]+rest; break; } } }
+      if(r===null && isKana(tok[i])){ const rest=go(i+1); if(rest!==null) r=tok[i]+rest; }   // かなのまま打った部分
+      return memo[i]=r; };
+    return go(0);
+  }
+  function fill(){
+    const v=full.value.trim();
+    if(!v){ AUTOKANA.manual=false; if(!AUTOKANA.manual) yomi.value=''; return; }
+    if(AUTOKANA.manual) return;
+    const toks=v.split(/[\s　]+/).filter(Boolean), out=[];
+    for(const t of toks){ const r=tokenReading(t); if(r===null) return; out.push(r); }
+    yomi.value=out.join(' ');
+  }
+  AUTOKANA.reset=()=>{ AUTOKANA.pairs={}; AUTOKANA.last=''; AUTOKANA.manual=false; };
+})();
 document.getElementById('reset').addEventListener('click',()=>{
   for(const id of ['full','yomi','birth','birthT','zoku']) document.getElementById(id).value='';
   for(const id of ['sex','honmei']) document.getElementById(id).value='';
   STATE = {ov:{n:{},sel:{}}, flags:{tate:false,yoko:false,shibari:false}, yomikudashi:'auto'};
+  AUTOKANA.reset();
   verdictHtml=''; document.getElementById('result').innerHTML='';
   document.getElementById('full').focus();
 });
