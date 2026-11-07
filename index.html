@@ -383,8 +383,7 @@ const KANA_GYO = (()=>{ const m={}; const add=(g,cs)=>{ for(const c of cs) m[c]=
 // アルファベット（講義レジュメp.17の画数。小文字は大文字として数える）。五行は読みの最初の音の行（レジュメに表はない）
 const ALPHA_STROKE={A:3,B:3,C:1,D:2,E:4,F:3,G:3,H:3,I:3,J:2,K:3,L:2,M:4,N:3,O:1,P:2,Q:2,R:3,S:1,T:2,U:2,V:2,W:4,X:2,Y:3,Z:3};
 const ALPHA_YOMI={A:'えー',B:'びー',C:'しー',D:'でぃー',E:'いー',F:'えふ',G:'じー',H:'えいち',I:'あい',J:'じぇー',K:'けー',L:'える',M:'えむ',N:'えぬ',O:'おー',P:'ぴー',Q:'きゅー',R:'あーる',S:'えす',T:'てぃー',U:'ゆー',V:'ぶい',W:'だぶりゅー',X:'えっくす',Y:'わい',Z:'ぜっと'};
-// アラビア数字の五行は講義の数理表（1・6＝水、2・7＝火、3・8＝木、4・9＝金、5・0＝土）。画数は漢数字の鑑定数
-const DIGIT_GYO={1:'水',2:'火',3:'木',4:'金',5:'土',6:'水',7:'火',8:'木',9:'金',0:'土'};
+// アラビア数字の五行は、上の DIGIT_GYO（講義の数理表）。画数は漢数字の鑑定数
 function alphaEntry(ch){
   const u=ch.replace(/[ａ-ｚＡ-Ｚ]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).toUpperCase();
   if(!(u in ALPHA_STROKE)) return null;
