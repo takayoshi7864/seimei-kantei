@@ -93,7 +93,7 @@ ul.pl{margin:4px 0;padding-left:1.2em}
 @media(max-width:700px){.bar .bn{display:none}}
 .yy{font-size:20px;letter-spacing:.2em}
 .hidden{display:none}
-.err{color:var(--bad);font-size:12px;margin-top:2px}
+.err{position:absolute;left:0;top:100%;margin-top:2px;z-index:5;background:var(--panel);color:var(--bad);font-size:12px;line-height:1.4;padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none}
 details{margin:6px 0}
 summary{cursor:pointer;color:var(--accent)}
 pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
@@ -116,7 +116,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
   <h2>入力</h2>
   <div class="row">
     <label>姓名（姓と名をスペースで区切る）<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
-    <label>読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err hidden"></span></label>
+    <label style="position:relative">読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err hidden"></span></label>
     <label>生年月日（任意）<input id="birth" class="num" style="width:180px" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
     <label>出生時刻（任意）<input id="birthT" type="time"></label>
     <label>性別（任意）
@@ -1157,7 +1157,7 @@ if(/[?&]debug=1/.test(location.search)){
       const p=yomi.selectionStart, same=h.length===v.length; yomi.value=h; try{ const q=same?p:h.length; yomi.setSelectionRange(q,q); }catch(e){}
       // 全角・半角のカナを直しただけならエラーにしない。漢字・英数字などを取り除いたときだけ知らせる
       const keep=x=>x.normalize('NFKC').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
-      if(keep(v).replace(/[^ぁ-ゖー ]/g,'').length!==keep(v).length) showErr('ひらがなで入力してください（漢字・英数字は入力できません）');
+      if(keep(v).replace(/[^ぁ-ゖー ]/g,'').length!==keep(v).length) showErr('ひらがなで入力してください');
     } };
   yomi.addEventListener('input',e=>{ AUTOKANA.manual = yomi.value.trim()!==''; if(!e.isComposing) hiraFix(); });
   yomi.addEventListener('compositionend',e=>{
