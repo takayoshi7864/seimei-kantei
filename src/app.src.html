@@ -79,7 +79,8 @@ td.ch{font-size:26px;line-height:1.2;font-family:"Hiragino Mincho ProN","Yu Minc
 .card .ttl{font-weight:700}
 ul.pl{margin:4px 0;padding-left:1.2em}
 .bar{display:flex;height:22px;border-radius:5px;overflow:hidden;border:1px solid var(--line);margin:6px 0}
-.bar div{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;white-space:nowrap}
+.bar div{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;min-width:0}
+@media(max-width:700px){.bar .bn{display:none}}
 .yy{font-size:20px;letter-spacing:.2em}
 .hidden{display:none}
 .drum{position:fixed;z-index:60;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
@@ -451,7 +452,8 @@ function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad){
       if(meiStr.includes(pat)) hits.push({where:'名',pat,note});
       else if(seiStr.includes(pat)) hits.push({where:'姓（参考）',pat,note,ref:true});
     }else if(pos==='name'){
-      if(meiStr.includes(pat) || (yomi && yomi.includes(pat))) hits.push({where:'名',pat,note});
+      // 名全体がその名であるときだけ（読みが字の境目をまたいで一致しても当てない：例 啓祐＝たかよし に「かよ」）
+      if(meiStr===pat || (yomi && yomi===pat)) hits.push({where:'名',pat,note});
     }else if(pos==='nameHead'){
       if(meiStr.startsWith(pat) || (pat==='心' && ((yomi && yomi.startsWith('こころ')) || kata2hira(meiStr).startsWith('こころ')))) hits.push({where:'名',pat,note});
       else if(pat==='人' && meiStr.length===1 && meiStr==='人') hits.push({where:'名',pat,note});
@@ -911,7 +913,7 @@ function render(){
   ];
   const colors={good:'#1f7a4d',warn:'#c98a00',bad:'#b3261e',none:'#8d8a82'};
   h+=`<section class="panel"><h2>手順3　五大真理による統合評価</h2>
-   <div class="bar">${truths.map(t=>`<div style="width:${t.w}%;background:${colors[t.st]}">${t.name} ${t.w}%</div>`).join('')}</div>
+   <div class="bar">${truths.map(t=>`<div style="width:${t.w}%;background:${colors[t.st]}"><span class="bn">${t.name} </span>${t.w}%</div>`).join('')}</div>
    <div class="grid">`;
   // 読み下し
   const hint = [...sound,...shape,...mean].filter(i=>i.st==='bad').map(i=>i.t);
