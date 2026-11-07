@@ -93,6 +93,7 @@ ul.pl{margin:4px 0;padding-left:1.2em}
 @media(max-width:700px){.bar .bn{display:none}}
 .yy{font-size:20px;letter-spacing:.2em}
 .hidden{display:none}
+.err{color:var(--bad);font-size:12px;margin-top:2px}
 details{margin:6px 0}
 summary{cursor:pointer;color:var(--accent)}
 pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
@@ -115,7 +116,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
   <h2>入力</h2>
   <div class="row">
     <label>姓名（姓と名をスペースで区切る）<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
-    <label>読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"></label>
+    <label>読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err hidden"></span></label>
     <label>生年月日（任意）<input id="birth" class="num" style="width:180px" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
     <label>出生時刻（任意）<input id="birthT" type="time"></label>
     <label>性別（任意）
@@ -1117,31 +1118,54 @@ if(/[?&]debug=1/.test(location.search)){
       out+=c; i++;                                                                                    // 変換できない文字はそのまま
     }
     return out; };
-  let romaji='';
-  full.addEventListener('keydown',e=>{
-    if(!(e.isComposing||e.keyCode===229)||e.ctrlKey||e.metaKey||e.altKey){ if(!e.isComposing && e.key && e.key.length===1) romaji=''; return; }
-    const m=/^Key([A-Z])$/.exec(e.code||'');
-    if(m) romaji+=m[1].toLowerCase();
-    else if(e.code==='Minus') romaji+='-';
-    else if(e.code==='Backspace') romaji=romaji.slice(0,-1);
-  });
-  // 最初のキーは、compositionstart より前に keydown が来るので、ここでは romaji を消さない（終了時に消す）
-  full.addEventListener('compositionstart',()=>{ AUTOKANA.last=''; });
-  full.addEventListener('compositionupdate',e=>{ if(isKana(e.data||'')) AUTOKANA.last=e.data; });
+  // 日本語入力の「変換前のかな」を記録する（姓名欄・読み欄の両方で使う）
+  const h2=x=>x.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  function makeCapture(el){
+    const st={romaji:'', last:''};
+    el.addEventListener('keydown',e=>{
+      if(!(e.isComposing||e.keyCode===229)||e.ctrlKey||e.metaKey||e.altKey){ if(!e.isComposing && e.key && e.key.length===1) st.romaji=''; return; }
+      const m=/^Key([A-Z])$/.exec(e.code||'');
+      if(m) st.romaji+=m[1].toLowerCase();
+      else if(e.code==='Minus') st.romaji+='-';
+      else if(e.code==='Backspace') st.romaji=st.romaji.slice(0,-1);
+    });
+    // 最初のキーは compositionstart より前に keydown が来るので、romaji は終了時に消す
+    el.addEventListener('compositionstart',()=>{ st.last=''; });
+    el.addEventListener('compositionupdate',e=>{ if(isKana(e.data||'')) st.last=e.data; });
+    st.finish=data=>{                                  // 確定した文字と、その読みを返す
+      const t=data||''; let rd=st.last;
+      const derived=romajiToKana(st.romaji);
+      // ローマ字から作った読みが、画面で見えたかなと矛盾しなければ、そちら（欠けが無い方）を使う
+      if(derived && isKana(derived) && (!rd || h2(derived).startsWith(h2(rd)))) rd = (rd && /^[ァ-ヺー]/.test(rd)) ? derived.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)) : derived;
+      st.last=''; st.romaji='';
+      return {t,rd};
+    };
+    return st;
+  }
+  const capFull=makeCapture(full), capYomi=makeCapture(yomi);
   full.addEventListener('compositionend',e=>{
-    const t=e.data||''; let rd=AUTOKANA.last;
-    const derived=romajiToKana(romaji), h=x=>x.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
-    // ローマ字から作った読みが、画面で見えたかなと矛盾しなければ、そちら（欠けが無い方）を使う
-    if(derived && isKana(derived) && (!rd || h(derived).startsWith(h(rd)))) rd = (rd && /^[ァ-ヺー]/.test(rd)) ? derived.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)) : derived;
+    const {t,rd}=capFull.finish(e.data);
     if(t && rd && t!==rd) AUTOKANA.pairs[t]=rd;
-    AUTOKANA.last=''; romaji=''; fill();
+    fill();
   });
   full.addEventListener('input',e=>{ if(!e.isComposing) fill(); });
   // 読みの欄は、ひらがなに固定する（カタカナ・半角カナは、ひらがなに直す）
   const toHira=v=>v.normalize('NFKC').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)).replace(/[^ぁ-ゖー ]/g,'');   // ひらがな・長音・空白以外（漢字など）は取り除く
-  const hiraFix=()=>{ const v=yomi.value, h=toHira(v); if(h!==v){ const p=yomi.selectionStart, same=h.length===v.length; yomi.value=h; try{ const q=same?p:h.length; yomi.setSelectionRange(q,q); }catch(e){} } };
+  const errEl=document.getElementById('yomi-err'); let errTm=null;
+  const showErr=m=>{ errEl.textContent=m; errEl.classList.remove('hidden'); clearTimeout(errTm); errTm=setTimeout(()=>errEl.classList.add('hidden'),4000); };
+  const hiraFix=()=>{ const v=yomi.value, h=toHira(v); if(h!==v){
+      const p=yomi.selectionStart, same=h.length===v.length; yomi.value=h; try{ const q=same?p:h.length; yomi.setSelectionRange(q,q); }catch(e){}
+      // 全角・半角のカナを直しただけならエラーにしない。漢字・英数字などを取り除いたときだけ知らせる
+      const keep=x=>x.normalize('NFKC').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+      if(keep(v).replace(/[^ぁ-ゖー ]/g,'').length!==keep(v).length) showErr('ひらがなで入力してください（漢字・英数字は入力できません）');
+    } };
   yomi.addEventListener('input',e=>{ AUTOKANA.manual = yomi.value.trim()!==''; if(!e.isComposing) hiraFix(); });
-  yomi.addEventListener('compositionend',hiraFix);
+  yomi.addEventListener('compositionend',e=>{
+    const {t,rd}=capYomi.finish(e.data);
+    // 読みの欄で漢字に変換したら、変換前のかな（読み）に置き換える
+    setTimeout(()=>{ if(t && rd && /[^ぁ-ゖァ-ヺー\s]/.test(t)){ const i=yomi.value.lastIndexOf(t); if(i>=0) yomi.value=yomi.value.slice(0,i)+rd+yomi.value.slice(i+t.length); }
+      AUTOKANA.manual = yomi.value.trim()!==''; hiraFix(); },0);
+  });
   yomi.addEventListener('blur',hiraFix);
   yomi.addEventListener('paste',()=>setTimeout(hiraFix,0));
   function tokenReading(tok){                       // 記録した（漢字→読み）の組み合わせで、この語を組み立てる
