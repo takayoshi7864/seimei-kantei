@@ -380,6 +380,15 @@ const KANA_STROKE = {'あ':2,'い':2,'う':3,'え':3,'お':3,'か':2,'き':3,'�
 const KANA_SMALL = {'ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','っ':'つ','ゃ':'や','ゅ':'ゆ','ょ':'よ','ゎ':'わ','ゕ':'か','ゖ':'け'};
 const KANA_GYO = (()=>{ const m={}; const add=(g,cs)=>{ for(const c of cs) m[c]=g; };
   add('木','かきくけこ'); add('火','たちつてとなにぬねのらりるれろ'); add('土','あいうえおやゆよわを'); add('金','さしすせそ'); add('水','はひふへほまみむめも'); return m; })();
+// アルファベット（講義レジュメp.17の画数。小文字は大文字として数える）。五行は読みの最初の音の行（レジュメに表はない）
+const ALPHA_STROKE={A:3,B:3,C:1,D:2,E:4,F:3,G:3,H:3,I:3,J:2,K:3,L:2,M:4,N:3,O:1,P:2,Q:2,R:3,S:1,T:2,U:2,V:2,W:4,X:2,Y:3,Z:3};
+const ALPHA_YOMI={A:'えー',B:'びー',C:'しー',D:'でぃー',E:'いー',F:'えふ',G:'じー',H:'えいち',I:'あい',J:'じぇー',K:'けー',L:'える',M:'えむ',N:'えぬ',O:'おー',P:'ぴー',Q:'きゅー',R:'あーる',S:'えす',T:'てぃー',U:'ゆー',V:'ぶい',W:'だぶりゅー',X:'えっくす',Y:'わい',Z:'ぜっと'};
+function alphaEntry(ch){
+  const u=ch.replace(/[ａ-ｚＡ-Ｚ]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).toUpperCase();
+  if(!(u in ALPHA_STROKE)) return null;
+  const first=[...ALPHA_YOMI[u]][0]; const e=kanaEntry(first);
+  return {c:ch, k:'', n:ALPHA_STROKE[u], g:e?e.g:'', m:'', y:'', a:'', p:0, f:0, kana:1, alpha:u};
+}
 function kanaEntry(ch){
   const d = kata2hira(ch).replace(/[ｰ―—－]/g,'ー').normalize('NFD'); const base0=[...d][0]; const base = KANA_SMALL[base0]||base0;
   if(!(base in KANA_STROKE)) return null;
@@ -394,10 +403,12 @@ function lookupChars(str){
     prev = key;
     let list = BYCHAR.get(key)||[];
     if(!list.length && /[ぁ-ゖァ-ヺーｰ―—－]/.test(key)){ const e=kanaEntry(key); if(e){ e.y = ''; list=[e]; } }
+    if(!list.length && /[A-Za-zＡ-Ｚａ-ｚ]/.test(key)){ const e=alphaEntry(key); if(e) list=[e]; }
     return {ch, list, sel:0};
   });
 }
 function readingsOf(entry){
+  if(entry.alpha) return [ALPHA_YOMI[entry.alpha]];
   if(entry.kana) return [kata2hira(entry.c)];
   // 音読み（ひらがな）／訓読み／名乗り
   const out = [];
@@ -896,7 +907,7 @@ function render(){
       <td>${e?tag('none',e.g):'<span class="sub">-</span>'}</td>
       <td class="yy">${c.n!=null?yyMark(c.n):''}</td>
       <td>${e?esc(e.y):''}</td><td class="sub">${e?esc(e.a):''}</td>
-      <td class="sub">${e?(e.kana?'仮名':`p.${e.p}`):''}</td></tr>`;
+      <td class="sub">${e?(e.alpha?'英字':e.kana?'仮名':`p.${e.p}`):''}</td></tr>`;
   }
   h+=`</tbody></table>`;
   if(missing.length){
