@@ -51,6 +51,7 @@ input:not([type=checkbox]),select{height:40px;font-size:16px}
 input.kanji{width:12em}
 input.num{width:5em}
 button.primary{background:var(--accent);color:#fff;border:0;border-radius:6px;height:40px;padding:0 22px;font:inherit;font-size:16px;cursor:pointer}
+button.reset{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;height:40px;padding:0 22px;font:inherit;font-size:16px;cursor:pointer}
 button.small{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
@@ -125,6 +126,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
       <select id="honmei"><option value="">指定なし</option><option>一白水星</option><option>二黒土星</option><option>三碧木星</option><option>四緑木星</option><option>五黄土星</option><option>六白金星</option><option>七赤金星</option><option>八白土星</option><option>九紫火星</option></select>
     </label>
     <button class="primary" id="go">鑑定する</button>
+    <button class="reset" id="reset" type="button">リセット</button>
   </div>
 </section>
 <div id="result"></div>
@@ -1075,6 +1077,13 @@ function labelTables(root){
   });
 }
 for(const id of ['result','qres','kres']){ const el=document.getElementById(id); if(el) new MutationObserver(()=>labelTables(el)).observe(el,{childList:true}); }
+document.getElementById('reset').addEventListener('click',()=>{
+  for(const id of ['full','yomi','birth','birthT','zoku']) document.getElementById(id).value='';
+  for(const id of ['sex','honmei']) document.getElementById(id).value='';
+  STATE = {ov:{n:{},sel:{}}, flags:{tate:false,yoko:false,shibari:false}, yomikudashi:'auto'};
+  verdictHtml=''; document.getElementById('result').innerHTML='';
+  document.getElementById('full').focus();
+});
 function syncHonmei(){ const b=parseBirth(); if(b) document.getElementById('honmei').value=STARS[kigaku(b).hon]; }
 document.getElementById('go').addEventListener('click',()=>{ syncHonmei(); STATE.ov={n:{},sel:{}}; render(); });
 for(const id of ['full','yomi','zoku','birth']) document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ syncHonmei(); STATE.ov={n:{},sel:{}}; render(); }});
