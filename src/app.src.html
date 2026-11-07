@@ -318,6 +318,25 @@ const KYOSOU = [
   ['茜','any',null,'財布にペンペン草が生える字義となり、終生金銭の苦労が絶えない。'],
   ['背','any',null,'背き離れる。運気や縁が離れていく。'],
   ['流','any',null,'運気・財産・命が水に流れる。'],
+  ['炎','any',null,'「火」が二つ重なる焼き尽くしの気。五行の調和を破り、短気・衝突による自滅や財産の焼失を招く。'],
+  ['隼','any',null,'動物（鳥）の字。寿命が短く生活が不安定で、居場所を転々とする流れ者の運命を招く。'],
+  ['華','any',null,'花の字。咲いている時期は一瞬で、人生の全盛期が短く、後は落ちぶれる。'],
+  ['悠','any',null,'成果や実績が遥か彼方に遠ざかる。努力しても結果が手元に残らない。'],
+  ['羽','any',null,'羽根だけで身（実体）がない。浮ついて地に足がつかず、迷走する。'],
+  ['翔','any',null,'羊に羽が生えて飛んでいく。実体がなく、空回りして定着しない。'],
+  ['例','any',null,'「ゼロ」に通じる字。築いた財産や成果がゼロに帰す。'],
+  ['強','any',null,'過度の勝ち気や強がりを固定し、周囲との摩擦と孤立、他者からの攻撃を招く。'],
+  ['重','any',null,'人の器を超えた過剰な重み。受け止めきれず、反動として不幸や病気を招く。'],
+  ['妃','any',null,'高貴すぎる字。庶民が使うと位負けし、脳・血管系の病難を招く。'],
+  ['病','any',null,'病を意味する字。無条件の凶相文字。'],
+  ['最','any',null,'刑罰として耳を切る象形に由来する。'],
+  ['雨','any',null,'気象の字。人生が激しく揺れ動き、安定した暮らしが得にくい。'],
+  ['雲','any',null,'気象の字。人生が激しく揺れ動き、安定した暮らしが得にくい。'],
+  ['嵐','any',null,'気象の字。人生が激しく揺れ動き、安定した暮らしが得にくい。'],
+  ['枝','any',null,'枝に葉だけを意味し、実りや成果が残らない。'],
+  ['葉','any',null,'枝に葉だけを意味し、実りや成果が残らない。'],
+  ['瘤','any',null,'コブ（腫瘍）を意味する字。腫瘍・脳梗塞・大動脈瘤などの病を招く。'],
+  ['朝','nameHead',null,'名頭に用いると「魔」に通じ、家庭や人間関係に魔（不和・亀裂）が差し込む（女性の名頭で無条件の凶）。'],
   ['溜','any',null,'講義レジュメ（名前に使用したくない字）に挙げられた字。'],
   ['琉','any',null,'講義レジュメ（名前に使用したくない字）に挙げられた字。'],
   ['勇','any',null,'講義レジュメ（名前に使用したくない字）に挙げられた字。'],
@@ -456,7 +475,7 @@ function judgeShape(sei, mei, flags, baseBad){
   if(!flags.tate && !flags.yoko && !flags.shibari) L('none','縦分離・横分離・縛り','自動判定できません。字形を見て、上のチェックで指定してください。');
   return items;
 }
-function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad){
+function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, sex){
   const items=[]; const hits=[];
   for(const [pat,pos,,note] of KYOSOU){
     if(pos==='any'){
@@ -466,6 +485,7 @@ function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad){
       // 名全体がその名であるときだけ（読みが字の境目をまたいで一致しても当てない：例 啓祐＝たかよし に「かよ」）
       if(meiStr===pat || (yomi && yomi===pat)) hits.push({where:'名',pat,note});
     }else if(pos==='nameHead'){
+      if(pat==='朝' && sex==='m') continue;
       if(meiStr.startsWith(pat) || (pat==='心' && ((yomi && yomi.startsWith('こころ')) || kata2hira(meiStr).startsWith('こころ')))) hits.push({where:'名',pat,note});
       else if(pat==='人' && meiStr.length===1 && meiStr==='人') hits.push({where:'名',pat,note});
     }
@@ -904,11 +924,11 @@ function render(){
   const gogyo = judgeGogyo(all, sei.length);
   const inyou = judgeInyou(seiN, meiN, honmei, STATE.flags);
   const tenchi0 = judgeTenchi(P, honmei, {yomi:'none', gogyo:gogyo.st, inyou:inyou.st});
-  const meanBase = judgeMeaning(seiStr, meiStr, yomi, zoku, null);
+  const meanBase = judgeMeaning(seiStr, meiStr, yomi, zoku, null, document.getElementById('sex').value);
   const kyoOther0 = [grp(sound),grp(shape0),grp(meanBase),gogyo.st,inyou.st,tenchi0.tenchi.st].includes('bad');
   const kaku = judgeKaku(P, kyoOther0);
   const baseBad = kyoOther0 || kaku.st==='bad';
-  const mean = judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad);
+  const mean = judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, document.getElementById('sex').value);
   const shape = judgeShape(sei, mei, STATE.flags, baseBad);
   const sSt = {音:grp(sound), 形:grp(shape), 意味:grp(mean)};
   const list = items=>`<ul class="pl">${items.map(i=>`<li>${tag(ST[i.st]?ST[i.st][0]:i.st, ST[i.st]?ST[i.st][1]:i.st)} <b>${esc(i.t)}</b><br><span class="sub">${esc(i.d)}</span></li>`).join('')}</ul>`;
