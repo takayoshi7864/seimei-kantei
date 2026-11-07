@@ -67,6 +67,15 @@ th{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
   td input.num,td select{max-width:100%}
 }
 td.ch{font-size:26px;line-height:1.2;font-family:"Hiragino Mincho ProN","Yu Mincho",serif}
+.verdict{border-radius:12px;padding:16px 20px;margin-bottom:14px;border:2px solid;display:flex;align-items:center;gap:8px 22px;flex-wrap:wrap}
+.verdict.good{background:var(--good-bg);border-color:var(--good)}
+.verdict.bad{background:var(--bad-bg);border-color:var(--bad)}
+.verdict .big{font-size:48px;font-weight:800;letter-spacing:.12em;line-height:1.1}
+.verdict.good .big{color:var(--good)}
+.verdict.bad .big{color:var(--bad)}
+.verdict .lbl{font-size:12px;color:var(--sub)}
+.verdict .why{flex:1;min-width:220px;font-size:14px;line-height:1.7}
+@media(max-width:700px){.verdict{padding:14px 16px}.verdict .big{font-size:40px}}
 .tag{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap}
 .good{color:var(--good);background:var(--good-bg)}
 .bad{color:var(--bad);background:var(--bad-bg)}
@@ -686,7 +695,11 @@ const JST=9*3600000;
   const fix=()=>{ const v=inp.value, h=half(v); if(h!==v){ const p=inp.selectionStart; inp.value=h; try{ inp.setSelectionRange(p,p); }catch(e){} } };
   inp.addEventListener('input',e=>{ if(!e.isComposing) fix(); });
   inp.addEventListener('compositionend',fix);
-  inp.addEventListener('blur',fix);
+  // 確定したら 1985/07/13 の形（月・日は2桁）にそろえる
+  const pad=()=>{ fix(); const r=parseDateText(inp.value); if(r) inp.value=`${r.y}/${String(r.m).padStart(2,'0')}/${String(r.d).padStart(2,'0')}`; };
+  inp.addEventListener('blur',pad);
+  inp.addEventListener('change',pad);
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') pad(); });
 })();
 function parseDateText(v){
   v=(v||'').trim().replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248));
@@ -821,7 +834,9 @@ function kigakuNow(hon,getsu,date,age,eff){
 /* ================= 描画 ================= */
 let STATE = {ov:{n:{},sel:{}}, flags:{tate:false,yoko:false,shibari:false}, yomikudashi:'auto'};
 
+let verdictHtml='';
 function render(){
+  verdictHtml='';
   const parts_ = document.getElementById('full').value.trim().split(/[\s\u3000]+/).filter(Boolean);
   const seiStr = parts_[0]||'', meiStr = parts_.slice(1).join('');
   const yp = kata2hira(document.getElementById('yomi').value.trim()).split(/[\s\u3000]+/).filter(Boolean);
@@ -952,11 +967,12 @@ function render(){
   const badT = truths.filter(t=>t.st==='bad').map(t=>t.name);
   const kyomei = badT.length>0;
   const dark = badT.slice(0,4).length && kaku.strong;
-  h+=`<h3>統合判定</h3>
-   <p style="font-size:20px;margin:6px 0">${tag(kyomei?'bad':'good', kyomei?'凶名':'正名')}</p>
-   ${kyomei?`<p>凶に該当した真理：<b>${esc(badT.join('、'))}</b></p>`:''}
-   ${dark?`<p>${tag('bad','ダークサイド効果')} 強い吉数（${kaku.rows.filter(r=>STRONG_NUMS.includes(r.k.n)).map(r=>r.n+r.v+'画').join('、')}）が、凶の真理により悪の方向へ増幅されます。</p>`:''}
-  </section>`;
+  verdictHtml=`<div class="verdict ${kyomei?'bad':'good'}">
+   <div><div class="lbl">統合判定　${esc(seiStr)} ${esc(meiStr)}</div><div class="big">${kyomei?'凶名':'正名'}</div></div>
+   <div class="why">${kyomei?`凶に該当した真理：<b>${esc(badT.join('、'))}</b>`:'五大真理に凶はありません。'}
+   ${dark?`<br>${tag('bad','ダークサイド効果')} 強い吉数（${kaku.rows.filter(r=>STRONG_NUMS.includes(r.k.n)).map(r=>r.n+r.v+'画').join('、')}）が、凶の真理により悪の方向へ増幅されます。`:''}</div>
+  </div>`;
+  h+=`</section>`;
   // 流年（九曜表：画数を9で割った系列。数え年がその系列の数と9年周期で重なる年の前後1年に象意が表面化する）
   const bd = parseBirth();
   const birth = bd? bd.y : 0;
@@ -994,7 +1010,7 @@ function render(){
     }).join('');
     h+=`<section class="panel"><h2>流年（数え${age}歳）</h2><div class="grid">${lineK}</div></section>`;
   }
-  box.innerHTML=h; bind();
+  box.innerHTML=verdictHtml+h; bind();
 }
 function bind(){
   document.querySelectorAll('[data-n]').forEach(el=>el.addEventListener('change',()=>{ STATE.ov.n[el.dataset.n]=el.value; render(); }));
