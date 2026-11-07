@@ -1137,7 +1137,13 @@ if(/[?&]debug=1/.test(location.search)){
     AUTOKANA.last=''; romaji=''; fill();
   });
   full.addEventListener('input',e=>{ if(!e.isComposing) fill(); });
-  yomi.addEventListener('input',()=>{ AUTOKANA.manual = yomi.value.trim()!==''; });
+  // 読みの欄は、ひらがなに固定する（カタカナ・半角カナは、ひらがなに直す）
+  const toHira=v=>v.normalize('NFKC').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  const hiraFix=()=>{ const v=yomi.value, h=toHira(v); if(h!==v){ const p=yomi.selectionStart, same=h.length===v.length; yomi.value=h; try{ const q=same?p:h.length; yomi.setSelectionRange(q,q); }catch(e){} } };
+  yomi.addEventListener('input',e=>{ AUTOKANA.manual = yomi.value.trim()!==''; if(!e.isComposing) hiraFix(); });
+  yomi.addEventListener('compositionend',hiraFix);
+  yomi.addEventListener('blur',hiraFix);
+  yomi.addEventListener('paste',()=>setTimeout(hiraFix,0));
   function tokenReading(tok){                       // 記録した（漢字→読み）の組み合わせで、この語を組み立てる
     const keys=Object.keys(AUTOKANA.pairs).sort((x,y)=>y.length-x.length), memo={};
     const go=i=>{ if(i===tok.length) return ''; if(i in memo) return memo[i];
@@ -1153,7 +1159,7 @@ if(/[?&]debug=1/.test(location.search)){
     if(AUTOKANA.manual) return;
     const toks=v.split(/[\s　]+/).filter(Boolean), out=[];
     for(const t of toks){ const r=tokenReading(t); if(r===null) return; out.push(r); }
-    yomi.value=out.join(' ');
+    yomi.value=toHira(out.join(' '));
   }
   AUTOKANA.reset=()=>{ AUTOKANA.pairs={}; AUTOKANA.last=''; AUTOKANA.manual=false; };
 })();
