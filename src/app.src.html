@@ -55,6 +55,17 @@ button.small{background:var(--bg);color:var(--ink);border:1px solid var(--line);
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
 th{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
+@media(max-width:700px){
+  table,thead,tbody,tr,td{display:block;width:100%}
+  thead{display:none}
+  tr{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;padding:6px 10px}
+  td,th{border:0;padding:3px 0}
+  td{display:flex;gap:10px;align-items:baseline;word-break:break-word}
+  td::before{content:attr(data-label);flex:0 0 4.5em;color:var(--sub);font-size:12px}
+  td:empty{display:none}
+  td.ch{font-size:28px;line-height:1.2}
+  td input.num,td select{max-width:100%}
+}
 td.ch{font-size:26px;line-height:1.2;font-family:"Hiragino Mincho ProN","Yu Mincho",serif}
 .tag{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap}
 .good{color:var(--good);background:var(--good-bg)}
@@ -988,6 +999,14 @@ function bind(){
   for(const k of ['tate','yoko','shibari']){ const el=document.getElementById('f-'+k); if(el) el.addEventListener('change',()=>{ STATE.flags[k]=el.checked; render(); }); }
   const y=document.getElementById('yomikudashi'); if(y) y.addEventListener('change',()=>{ STATE.yomikudashi=y.value; render(); });
 }
+/* 狭い画面では表を縦並びのカードにする：各セルに見出しを付ける */
+function labelTables(root){
+  root.querySelectorAll('table').forEach(t=>{
+    const hs=[...t.querySelectorAll('thead th')].map(x=>x.textContent.trim());
+    t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{ if(hs[i]) td.setAttribute('data-label',hs[i]); }));
+  });
+}
+for(const id of ['result','qres','kres']){ const el=document.getElementById(id); if(el) new MutationObserver(()=>labelTables(el)).observe(el,{childList:true}); }
 document.getElementById('go').addEventListener('click',()=>{ STATE.ov={n:{},sel:{}}; render(); });
 for(const id of ['full','yomi','zoku']) document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ STATE.ov={n:{},sel:{}}; render(); }});
 for(const id of ['zoku','honmei','sex']) document.getElementById(id).addEventListener('change',render);
