@@ -93,7 +93,9 @@ ul.pl{margin:4px 0;padding-left:1.2em}
 @media(max-width:700px){.bar .bn{display:none}}
 .yy{font-size:20px;letter-spacing:.2em}
 .hidden{display:none}
-.err{color:var(--bad);font-size:13px;line-height:20px;height:20px;margin-top:8px}
+.err{display:block;color:var(--bad);font-size:13px;line-height:20px;height:20px;margin-top:2px;white-space:nowrap}
+.row.top{align-items:flex-start}
+.row.top>button{align-self:flex-end}
 details{margin:6px 0}
 summary{cursor:pointer;color:var(--accent)}
 pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
@@ -114,9 +116,9 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
 <div id="t-kantei">
 <section class="panel">
   <h2>入力</h2>
-  <div class="row">
+  <div class="row top">
     <label>姓名（姓と名をスペースで区切る）<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
-    <label>読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"></label>
+    <label>読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err" role="alert"></span></label>
     <label>生年月日（任意）<input id="birth" class="num" style="width:180px" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
     <label>出生時刻（任意）<input id="birthT" type="time"></label>
     <label>性別（任意）
@@ -129,7 +131,6 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
     <button class="primary" id="go">鑑定する</button>
     <button class="reset" id="reset" type="button">リセット</button>
   </div>
-  <div id="yomi-err" class="err" role="alert"></div>
 </section>
 <div id="result"></div>
 </div>
