@@ -83,13 +83,6 @@ ul.pl{margin:4px 0;padding-left:1.2em}
 @media(max-width:700px){.bar .bn{display:none}}
 .yy{font-size:20px;letter-spacing:.2em}
 .hidden{display:none}
-.drum{position:fixed;z-index:60;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.drum .cols{position:relative;display:flex;gap:4px}
-.drum .col{height:180px;width:76px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;padding:72px 0}
-.drum .col::-webkit-scrollbar{display:none}
-.drum .col div{height:36px;line-height:36px;text-align:center;scroll-snap-align:center;font-size:16px;cursor:pointer}
-.drum .band{position:absolute;left:0;right:0;top:72px;height:36px;border-top:1px solid var(--accent);border-bottom:1px solid var(--accent);background:rgba(120,140,180,.12);pointer-events:none}
-.drum .ft{display:flex;justify-content:space-between;margin-top:8px}
 details{margin:6px 0}
 summary{cursor:pointer;color:var(--accent)}
 pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
@@ -1009,52 +1002,10 @@ function labelTables(root){
   });
 }
 for(const id of ['result','qres','kres']){ const el=document.getElementById(id); if(el) new MutationObserver(()=>labelTables(el)).observe(el,{childList:true}); }
-document.getElementById('go').addEventListener('click',()=>{ STATE.ov={n:{},sel:{}}; render(); });
-for(const id of ['full','yomi','zoku']) document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ STATE.ov={n:{},sel:{}}; render(); }});
+function syncHonmei(){ const b=parseBirth(); if(b) document.getElementById('honmei').value=STARS[kigaku(b).hon]; }
+document.getElementById('go').addEventListener('click',()=>{ syncHonmei(); STATE.ov={n:{},sel:{}}; render(); });
+for(const id of ['full','yomi','zoku','birth']) document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ syncHonmei(); STATE.ov={n:{},sel:{}}; render(); }});
 for(const id of ['zoku','honmei','sex']) document.getElementById(id).addEventListener('change',render);
-/* ドラムロール式の生年月日選択（入力欄に直接入力もできる） */
-(function(){
-  const inp=document.getElementById('birth'); let box=null, cols={};
-  const H=36, thisY=new Date().getFullYear();
-  const items={y:[],m:[],d:[]};
-  for(let y=thisY;y>=1850;y--) items.y.push(y);
-  for(let m=1;m<=12;m++) items.m.push(m);
-  const unit={y:'年',m:'月',d:'日'};
-  function fillDays(){ const y=cur('y')||2000, m=cur('m')||1, n=new Date(y,m,0).getDate(), keep=cur('d');
-    cols.d.innerHTML=''; for(let d=1;d<=n;d++){ const e=document.createElement('div'); e.textContent=d+'日'; e.dataset.v=d; cols.d.appendChild(e); }
-    if(keep) setCol('d',Math.min(keep,n),false); }
-  function cur(k){ const c=cols[k]; const i=Math.round(c.scrollTop/H); const e=c.children[Math.min(Math.max(i,0),c.children.length-1)]; return e?+e.dataset.v:0; }
-  let mute=0;
-  function setCol(k,v,smooth){ if(!smooth) mute=Date.now()+400; const c=cols[k]; const i=[...c.children].findIndex(e=>+e.dataset.v===v); if(i>=0) c.scrollTo({top:i*H,behavior:smooth?'smooth':'auto'}); }
-  function write(){ const y=cur('y'), m=cur('m'), d=cur('d'); if(!(y&&m&&d)) return;
-    inp.value=`${y}/${m}/${d}`; inp.dispatchEvent(new Event('change')); }
-  function build(){
-    box=document.createElement('div'); box.className='drum hidden';
-    box.innerHTML='<div class="cols"><div class="col" data-k="y"></div><div class="col" data-k="m"></div><div class="col" data-k="d"></div><div class="band"></div></div><div class="ft"><button type="button" class="small" id="drum-clear">消去</button><button type="button" class="small" id="drum-ok">決定</button></div>';
-    document.body.appendChild(box);
-    for(const k of ['y','m','d']){ cols[k]=box.querySelector(`[data-k="${k}"]`); }
-    for(const k of ['y','m']) for(const v of items[k]){ const e=document.createElement('div'); e.textContent=v+unit[k]; e.dataset.v=v; cols[k].appendChild(e); }
-    fillDays();
-    let tm=null;
-    for(const k of ['y','m','d']){
-      cols[k].addEventListener('scroll',()=>{ clearTimeout(tm); tm=setTimeout(()=>{ if(Date.now()<mute) return; if(k!=='d') fillDays(); write(); },120); });
-      cols[k].addEventListener('click',e=>{ if(e.target.dataset.v){ setCol(k,+e.target.dataset.v,true); } });
-    }
-    box.querySelector('#drum-ok').addEventListener('click',close);
-    box.querySelector('#drum-clear').addEventListener('click',()=>{ inp.value=''; inp.dispatchEvent(new Event('change')); render(); close(); });
-  }
-  function place(){ const r=inp.getBoundingClientRect(); box.style.left=Math.max(8,Math.min(r.left,innerWidth-box.offsetWidth-8))+'px';
-    const below=r.bottom+6, h=box.offsetHeight; box.style.top=(below+h>innerHeight? Math.max(8,r.top-h-6): below)+'px'; }
-  function open(){ if(!box) build(); const p=parseDateText(inp.value)||{y:1985,m:1,d:1};
-    box.classList.remove('hidden'); place();
-    setCol('y',p.y,false); setCol('m',p.m,false); fillDays(); setCol('d',p.d,false); }
-  function close(){ if(box) box.classList.add('hidden'); }
-  inp.addEventListener('focus',open); inp.addEventListener('click',open);
-  inp.addEventListener('input',()=>{ const p=parseDateText(inp.value); if(p&&box&&!box.classList.contains('hidden')){ setCol('y',p.y,false); setCol('m',p.m,false); fillDays(); setCol('d',p.d,false); } });
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key==='Escape') close(); });
-  document.addEventListener('mousedown',e=>{ if(box&&!box.classList.contains('hidden')&&!box.contains(e.target)&&e.target!==inp) close(); });
-  window.addEventListener('resize',()=>{ if(box&&!box.classList.contains('hidden')) place(); });
-})();
 for(const id of ['birth','birthT']) document.getElementById(id).addEventListener('change',()=>{ const b=parseBirth(); if(b) document.getElementById('honmei').value=STARS[kigaku(b).hon]; render(); });
 
 /* ================= 字典検索 ================= */
