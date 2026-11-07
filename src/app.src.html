@@ -170,6 +170,8 @@ const DICT = __DICT__;
 
 /* ================= 設定（レポート記載の既定値） ================= */
 const KAKUSU = __KAKU__;               // 鑑定ハンドブック p.111-126「画数の深義」（1〜81画）
+const SHAPE = __SHAPE__;   // 字の構造（tools/make_shape.py）v=縦に割れる字、h=横に割れる字
+const SHAPE_V=new Set([...SHAPE.v]), SHAPE_H=new Set([...SHAPE.h]);
 const GOGYO_PAIR = __GPAIR__;   // 講義レジュメ「五行の深義」（5×5の組み合わせ）
 const KAKU_BY = Object.fromEntries(KAKUSU.map(k=>[k.n,k]));
 const DEFAULT_KAKU = {};                // 利用者が区分を上書きするための表（初期は空）
@@ -954,6 +956,12 @@ function render(){
   const kaku = judgeKaku(P, kyoOther0);
   const baseBad = kyoOther0 || kaku.st==='bad';
   const mean = judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, document.getElementById('sex').value);
+  // 字形の自動判定：全ての字が左右に割れる→縦分離名、全ての字が上下に割れる→横分離名（候補としてチェックを入れる。外せる）
+  const strc=(()=>{ let prev=''; return [...(seiStr+meiStr)].map(ch=>{ const k=(ch==='々'&&prev)?prev:ch; prev=k; const v=SHAPE_V.has(k), h2=SHAPE_H.has(k); return {ch,v,h:h2,label:v&&h2?'左右・上下':v?'左右':h2?'上下':'一体'}; }); })();
+  const allV=strc.length>=2&&strc.every(c=>c.v), allH=strc.length>=2&&strc.every(c=>c.h);
+  const autoKey=seiStr+' '+meiStr;
+  if(STATE.autoKey!==autoKey){ STATE.flags.tate=allV; STATE.flags.yoko=allH; STATE.autoKey=autoKey; }
+  const seiAllV=strc.slice(0,[...seiStr].length).every(c=>c.v);
   const shape = judgeShape(sei, mei, STATE.flags, baseBad);
   const sSt = {音:grp(sound), 形:grp(shape), 意味:grp(mean)};
   const list = items=>`<ul class="pl">${items.map(i=>`<li>${tag(ST[i.st]?ST[i.st][0]:i.st, ST[i.st]?ST[i.st][1]:i.st)} <b>${esc(i.t)}</b><br><span class="sub">${esc(i.d)}</span></li>`).join('')}</ul>`;
@@ -963,6 +971,7 @@ function render(){
      <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-yoko" ${STATE.flags.yoko?'checked':''}>横分離名（かんむり等で上下に割れる字が多い）</label>
      <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-shibari" ${STATE.flags.shibari?'checked':''}>縛り（部首・偏旁の重複）</label>
    </div>
+   <p class="sub" style="margin:0 0 10px">字の構造（辞書データからの自動判定）：${strc.map(c=>esc(c.ch)+'＝'+c.label).join('　')}。${allV?'全ての字が左右に割れるため、縦分離名の候補です（違う場合は、チェックを外してください）。':allH?'全ての字が上下に割れるため、横分離名の候補です（違う場合は、チェックを外してください）。':'全ての字が同じ向きに割れているわけではないため、縦分離名・横分離名の候補には当たりません。'}${(!allV&&seiAllV)?'姓の字が全て左右に割れています。名には、割れない字を選ぶのが原則です。':''}</p>
    <div class="grid">
     <div class="card"><div class="hd"><span class="ttl">音（字音）</span>${stTag(sSt.音)}</div>${list(sound)}</div>
     <div class="card"><div class="hd"><span class="ttl">形（字形）</span>${stTag(sSt.形)}</div>${list(shape)}</div>
