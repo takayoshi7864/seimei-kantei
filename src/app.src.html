@@ -336,6 +336,7 @@ const KYOSOU = [
   ['枝','any',null,'枝に葉だけを意味し、実りや成果が残らない。'],
   ['葉','any',null,'枝に葉だけを意味し、実りや成果が残らない。'],
   ['瘤','any',null,'コブ（腫瘍）を意味する字。腫瘍・脳梗塞・大動脈瘤などの病を招く。'],
+  ['麻','nameHead',null,'名頭に用いると「魔」に通じ、魔物・障害・中断を引き込む（女性の名頭で無条件の凶）。姓にある場合は、姓名全体が正名なら向上心として働く。'],
   ['朝','nameHead',null,'名頭に用いると「魔」に通じ、家庭や人間関係に魔（不和・亀裂）が差し込む（女性の名頭で無条件の凶）。'],
   ['溜','any',null,'講義レジュメ（名前に使用したくない字）に挙げられた字。'],
   ['琉','any',null,'講義レジュメ（名前に使用したくない字）に挙げられた字。'],
@@ -485,7 +486,7 @@ function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, sex){
       // 名全体がその名であるときだけ（読みが字の境目をまたいで一致しても当てない：例 啓祐＝たかよし に「かよ」）
       if(meiStr===pat || (yomi && yomi===pat)) hits.push({where:'名',pat,note});
     }else if(pos==='nameHead'){
-      if(pat==='朝' && sex==='m') continue;
+      if((pat==='朝'||pat==='麻') && sex==='m') continue;
       if(meiStr.startsWith(pat) || (pat==='心' && ((yomi && yomi.startsWith('こころ')) || kata2hira(meiStr).startsWith('こころ')))) hits.push({where:'名',pat,note});
       else if(pat==='人' && meiStr.length===1 && meiStr==='人') hits.push({where:'名',pat,note});
     }
