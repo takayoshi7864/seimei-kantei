@@ -383,6 +383,8 @@ const KANA_GYO = (()=>{ const m={}; const add=(g,cs)=>{ for(const c of cs) m[c]=
 // アルファベット（講義レジュメp.17の画数。小文字は大文字として数える）。五行は読みの最初の音の行（レジュメに表はない）
 const ALPHA_STROKE={A:3,B:3,C:1,D:2,E:4,F:3,G:3,H:3,I:3,J:2,K:3,L:2,M:4,N:3,O:1,P:2,Q:2,R:3,S:1,T:2,U:2,V:2,W:4,X:2,Y:3,Z:3};
 const ALPHA_YOMI={A:'えー',B:'びー',C:'しー',D:'でぃー',E:'いー',F:'えふ',G:'じー',H:'えいち',I:'あい',J:'じぇー',K:'けー',L:'える',M:'えむ',N:'えぬ',O:'おー',P:'ぴー',Q:'きゅー',R:'あーる',S:'えす',T:'てぃー',U:'ゆー',V:'ぶい',W:'だぶりゅー',X:'えっくす',Y:'わい',Z:'ぜっと'};
+// アラビア数字の五行は講義の数理表（1・6＝水、2・7＝火、3・8＝木、4・9＝金、5・0＝土）。画数は漢数字の鑑定数
+const DIGIT_GYO={1:'水',2:'火',3:'木',4:'金',5:'土',6:'水',7:'火',8:'木',9:'金',0:'土'};
 function alphaEntry(ch){
   const u=ch.replace(/[ａ-ｚＡ-Ｚ]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).toUpperCase();
   if(!(u in ALPHA_STROKE)) return null;
@@ -404,10 +406,10 @@ function lookupChars(str){
     let list = BYCHAR.get(key)||[];
     if(!list.length && /[ぁ-ゖァ-ヺーｰ―—－]/.test(key)){ const e=kanaEntry(key); if(e){ e.y = ''; list=[e]; } }
     if(!list.length && /[A-Za-zＡ-Ｚａ-ｚ]/.test(key)){ const e=alphaEntry(key); if(e) list=[e]; }
-    if(!list.length && /[0-9０-９]/.test(key)){            // アラビア数字は漢数字に直して数える（0は1画。五行は講義の数理表（5・0＝土）に従い土）
+    if(!list.length && /[0-9０-９]/.test(key)){            // アラビア数字は漢数字の画数で数える（0は1画）。五行は数理表
       const d=Number(key.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)));
-      if(d===0) list=[{c:ch, k:'', n:1, g:'土', m:'', y:'', a:'', p:0, f:0, kana:1, alpha:'0'}];
-      else { const base=(BYCHAR.get('零一二三四五六七八九'[d])||[])[0]; if(base) list=[Object.assign({},base,{c:ch})]; }
+      if(d===0) list=[{c:ch, k:'', n:1, g:DIGIT_GYO[0], m:'', y:'', a:'', p:0, f:0, kana:1, alpha:'0'}];
+      else { const base=(BYCHAR.get('零一二三四五六七八九'[d])||[])[0]; if(base) list=[Object.assign({},base,{c:ch,g:DIGIT_GYO[d]})]; }
     }
     return {ch, list, sel:0};
   });
