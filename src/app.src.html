@@ -1073,6 +1073,27 @@ function render(){
     }).join('');
     h+=`<section class="panel"><h2>流年（数え${age}歳）</h2><div class="grid">${lineK}</div></section>`;
   }
+  // ===== 凶のまとめ：凶に当たった項目を、真理ごとに、起こりやすいことと合わせて最後にまとめる =====
+  const MORE={
+    '縦分離名（へんとつくりで左右に割れる）':'人生が道半ばで真っ二つに割れるように、順調だった成果や事業が途中で崩れやすい。事故では、骨折で済むはずが切断に至るなど、重くなりやすい。離婚や、子宝に恵まれない・子供に問題が出るなど、家庭面にも表れやすい。組織の長や共同経営者になると、内紛や分裂を招きやすいので、雇用・共同経営は避けるのが原則。姓が割れている場合は、名に割れない字を選ぶ。',
+    '横分離名（かんむり等で上下に割れる）':'頭と胴が切り離される象意で、ノイローゼ・精神の失調・激しい頭痛などが出やすく、重いと首にまつわる不幸（首吊りなど）につながる。縦分離より数が少なく、見落としやすい。',
+    '一字名前（頭重足軽）':'若年期に急に注目されても、中年期から晩年期（数え55歳以降）に失速・失脚・事故・事業の頓挫が起こりやすい。命の半分しかない状態で、陰陽の面でも凶。',
+    '一字姓一字名':'串刺しのように不安定で、天才的に開花しても、環境の変化ひとつで状況が逆転し、多額の負債・孤立・失脚など、浮き沈みが極端になりやすい。'
+  };
+  const sumG=[];   // {g:'真理名', rows:[{t,d,more}]}
+  const addG=(g,t,d,more)=>{ let x=sumG.find(y=>y.g===g); if(!x){ x={g,rows:[]}; sumG.push(x); } x.rows.push({t,d,more:more||''}); };
+  for(const [lbl,items] of [['手順2　音（字音）',sound],['手順2　形（字形）',shape],['手順2　意味（字義）',mean]]) for(const i of items) if(i.st==='bad') addG('読み下し（'+lbl+'）',i.t,i.d,MORE[i.t]);
+  for(const i of gogyo.items) if(i.st==='bad') addG('五行',i.t,i.d);
+  if(gogyo.st==='bad' && kyomei) for(const pr of gogyo.pairs){ const d=GOGYO_PAIR[pr.a+pr.b]; if(d) addG('五行',pr.n+'　'+pr.a+'－'+pr.b+'（凶名の性質と体質）','凶名の性質：'+d[1]+'　体質：'+d[2]); }
+  for(const i of inyou.items) if(i.st==='bad') addG('陰陽',i.t,i.d);
+  for(const i of [...tenchi.tenchi.items,...tenchi.teitei.items]) if(i.st==='bad') addG('天地・天底の配合',i.t,i.d);
+  for(const r of kaku.rows){ if(GCLS[r.k.g]==='bad'){ const b=r.k.base; addG('画数（格数）',`${r.n}　${r.v}画（${r.role}）　${b.l}`,b.t+((b.kyo&&kyoNow)?'　凶名の作用：'+b.kyo:'')); } }
+  if(dark) addG('画数（格数）','ダークサイド効果','強い吉数が、凶の真理により悪い方向へ強まります。力が大きいほど、悪く出たときの影響も大きくなります。');
+  if(kyomei){
+    h+=`<section class="panel" id="kyo-summary"><h2>凶のまとめ（起こりやすいこと）</h2>
+      ${sumG.length?sumG.map(x=>`<h3>${esc(x.g)}</h3><ul class="pl">${x.rows.map(r=>`<li>${tag('bad','凶')} <b>${esc(r.t)}</b><br><span class="sub">${esc(r.d)}</span>${r.more?`<br><span class="sub">${esc(r.more)}</span>`:''}</li>`).join('')}</ul>`).join(''):'<p class="sub">個別の凶の項目はありません（読み下しの手動指定などで凶名になっています）。</p>'}
+      <p class="sub">起こりやすいことは、講義資料にある象意をまとめたもので、必ず起こるという意味ではありません。</p></section>`;
+  }
   box.innerHTML=verdictHtml+h; bind();
 }
 function bind(){
