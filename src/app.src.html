@@ -589,7 +589,8 @@ function judgeGogyo(chars, seiLen){
     if(BAD_PAIR.includes(x+y)){ items.push({st:'bad',t:`人格接続部が${x}－${y}`,d:'人格接続部（姓の最後の字と名の最初の字）の火－火・水－水・火－水・水－火は、無条件で大凶。'}); hit('bad'); }
     else if(x+y==='火金'||x+y==='金火'){ items.push({st:'warn',t:`人格接続部が${x}－${y}（火克金）`,d:'火が金を攻める相克の配置です。火が金を溶かし、財産・家族の結束・身体基盤を損なうとされます。大凶とされる火火・水水・火水・水火には当たりません。'}); hit('warn'); }
     else items.push({st:'good',t:'人格接続部',d:`${x}－${y}で、火火・水水・火水・水火にも、火克金にも当たりません。`});
-  }else items.push({st:'none',t:'人格接続部',d:'辞典に無い字があるため判定できません。'});
+  }else if(x===''||y===''){ items.push({st:'none',t:'人格接続部',d:'人格接続部に五行のない字（ん・ー）があるため判定しません。'}); }
+  else items.push({st:'none',t:'人格接続部',d:'辞典に無い字があるため判定できません。'});
   if(chars.length>=3 && a.every(Boolean)){
     const k=new Set(a).size;
     if(k===1){ items.push({st:'bad',t:'五行が1種類に集中',d:'極端な集中。その五行に対応する病気や性格の偏りを引き起こす。'}); hit('bad'); }
