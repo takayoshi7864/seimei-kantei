@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>姓名鑑定</title>
+<style>
+:root{
+  --bg:#f6f5f1; --panel:#ffffff; --ink:#23211d; --sub:#6b675f; --line:#dedad0;
+  --good:#1f7a4d; --bad:#b3261e; --warn:#a86a00; --none:#7a766d; --accent:#2f4f7f;
+  --good-bg:#e4f3ea; --bad-bg:#fbe7e5; --warn-bg:#fbf0d9; --none-bg:#eeece6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17181a; --panel:#202225; --ink:#ecebe6; --sub:#a5a299; --line:#34363a;
+    --good:#66c796; --bad:#ff8a80; --warn:#f0b758; --none:#9a978e; --accent:#8fb1e8;
+    --good-bg:#18332a; --bad-bg:#3a1f1d; --warn-bg:#3a2f16; --none-bg:#2a2b2e;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17181a; --panel:#202225; --ink:#ecebe6; --sub:#a5a299; --line:#34363a;
+    --good:#66c796; --bad:#ff8a80; --warn:#f0b758; --none:#9a978e; --accent:#8fb1e8;
+    --good-bg:#18332a; --bad-bg:#3a1f1d; --warn-bg:#3a2f16; --none-bg:#2a2b2e;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{ color-scheme:light; }
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.theme{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.theme button{background:var(--panel);color:var(--sub);border:0;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.theme button+button{border-left:1px solid var(--line)}
+.theme button.on{background:var(--accent);color:var(--bg);font-weight:700}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 "Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+header{padding:14px 16px 0;max-width:1100px;margin:0 auto}
+h1{font-size:20px;margin:0 0 8px;letter-spacing:.05em}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);max-width:1100px;margin:0 auto;padding:0 16px}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--sub);padding:10px 14px;font:inherit;cursor:pointer}
+nav button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+main{max-width:1100px;margin:0 auto;padding:16px}
+section.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+h2{font-size:16px;margin:0 0 10px;color:var(--accent)}
+h3{font-size:14px;margin:14px 0 6px}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:3px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+input:not([type=checkbox]),select{height:40px;font-size:16px}
+input.kanji{width:12em}
+input.num{width:5em}
+button.primary{background:var(--accent);color:#fff;border:0;border-radius:6px;height:40px;padding:0 22px;font:inherit;font-size:16px;cursor:pointer}
+button.small{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
+td.ch{font-size:26px;line-height:1.2;font-family:"Hiragino Mincho ProN","Yu Mincho",serif}
+.tag{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap}
+.good{color:var(--good);background:var(--good-bg)}
+.bad{color:var(--bad);background:var(--bad-bg)}
+.warn{color:var(--warn);background:var(--warn-bg)}
+.none{color:var(--none);background:var(--none-bg)}
+.sub{color:var(--sub);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg)}
+.card .hd{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:4px}
+.card .ttl{font-weight:700}
+ul.pl{margin:4px 0;padding-left:1.2em}
+.bar{display:flex;height:22px;border-radius:5px;overflow:hidden;border:1px solid var(--line);margin:6px 0}
+.bar div{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;white-space:nowrap}
+.yy{font-size:20px;letter-spacing:.2em}
+.hidden{display:none}
+.drum{position:fixed;z-index:60;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.drum .cols{position:relative;display:flex;gap:4px}
+.drum .col{height:180px;width:76px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;padding:72px 0}
+.drum .col::-webkit-scrollbar{display:none}
+.drum .col div{height:36px;line-height:36px;text-align:center;scroll-snap-align:center;font-size:16px;cursor:pointer}
+.drum .band{position:absolute;left:0;right:0;top:72px;height:36px;border-top:1px solid var(--accent);border-bottom:1px solid var(--accent);background:rgba(120,140,180,.12);pointer-events:none}
+.drum .ft{display:flex;justify-content:space-between;margin-top:8px}
+details{margin:6px 0}
+summary{cursor:pointer;color:var(--accent)}
+pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
+.mono{font-family:ui-monospace,Menlo,monospace}
+@media (max-width:640px){ main{padding:10px} input.kanji{width:100%} }
+</style>
+</head>
+<body>
+<header><h1>姓名鑑定</h1><div class="theme" id="theme"><button data-m="auto">自動</button><button data-m="light">ライト</button><button data-m="dark">ダーク</button></div></header>
+<nav id="tabs">
+  <button data-t="kantei" class="on">鑑定</button>
+  <button data-t="search">字典検索</button>
+  <button data-t="kaku">画数の深義</button>
+</nav>
+<main>
+
+<!-- ===== 鑑定 ===== -->
+<div id="t-kantei">
+<section class="panel">
+  <h2>入力</h2>
+  <div class="row">
+    <label>姓名（姓と名をスペースで区切る）<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
+    <label>読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"></label>
+    <label>生年月日（任意）<input id="birth" class="num" style="width:180px" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
+    <label>出生時刻（任意）<input id="birthT" type="time"></label>
+    <label>性別（任意）
+      <select id="sex"><option value="">指定なし</option><option value="m">男性</option><option value="f">女性</option></select>
+    </label>
+    <label>続柄（任意）<input id="zoku" value="" placeholder="例 長男" autocomplete="off"></label>
+    <label>本命星（任意）
+      <select id="honmei"><option value="">指定なし</option><option>一白水星</option><option>二黒土星</option><option>三碧木星</option><option>四緑木星</option><option>五黄土星</option><option>六白金星</option><option>七赤金星</option><option>八白土星</option><option>九紫火星</option></select>
+    </label>
+    <button class="primary" id="go">鑑定する</button>
+  </div>
+</section>
+<div id="result"></div>
+</div>
+
+<!-- ===== 字典検索 ===== -->
+<div id="t-search" class="hidden">
+<section class="panel">
+  <h2>字典検索</h2>
+  <div class="row">
+    <label>検索語（漢字・読み・名乗り）<input id="q" class="kanji" placeholder="例 崎 / たか / ひろ" autocomplete="off"></label>
+    <label>画数<input id="qn" class="num" type="number" min="1" max="30" placeholder="全て"></label>
+    <label>五行
+      <select id="qg"><option value="">全て</option><option>木</option><option>火</option><option>土</option><option>金</option><option>水</option></select>
+    </label>
+  </div>
+  <p class="sub" id="qinfo"></p>
+  <div id="qres"></div>
+</section>
+</div>
+
+<!-- ===== 画数の深義 ===== -->
+<div id="t-kaku" class="hidden">
+<section class="panel">
+  <h2>画数の深義（1〜81画）</h2>
+  <div class="row"><label>画数で絞る<input id="kn" class="num" type="number" min="1" max="81" placeholder="全て"></label>
+  <label>区分<select id="kg"><option value="">全て</option><option>大吉</option><option>吉</option><option>中</option><option>凶</option><option>大凶</option></select></label></div>
+  <div id="kres"></div>
+</section>
+</div>
+
+<!-- ===== 設定 ===== -->
+</main>
+
+<script>
+/* ================= 辞典データ ================= */
+const DICT = __DICT__;
+
+/* ================= 設定（レポート記載の既定値） ================= */
+const KAKUSU = __KAKU__;               // 鑑定ハンドブック p.111-126「画数の深義」（1〜81画）
+const GOGYO_PAIR = __GPAIR__;   // 講義レジュメ「五行の深義」（5×5の組み合わせ）
+const KAKU_BY = Object.fromEntries(KAKUSU.map(k=>[k.n,k]));
+const DEFAULT_KAKU = {};                // 利用者が区分を上書きするための表（初期は空）
+const STRONG_NUMS = [31,33,39,41];      // 強い吉数（レポート：ダークサイド効果の対象）
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+let KAKU = DEFAULT_KAKU;
+
+/* ================= 辞典の索引 ================= */
+const BYCHAR = new Map();
+for(const e of DICT){
+  for(const ch of new Set([e.c, e.k].filter(Boolean))){
+    if(!BYCHAR.has(ch)) BYCHAR.set(ch, []);
+    BYCHAR.get(ch).push(e);
+  }
+}
+const kata2hira = s => s.replace(/[ァ-ヶ]/g, c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+
+/* ================= 基本の数理 ================= */
+const DIGIT_GYO = {1:'水',6:'水',2:'火',7:'火',3:'木',8:'木',4:'金',9:'金',5:'土',0:'土'};
+const gyoOf = n => DIGIT_GYO[n%10];
+const isYang = n => n%2===1;          // 奇数=陽(〇) 偶数=陰(●)
+const yyMark = n => isYang(n)?'〇':'●';
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tag = (cls,txt) => `<span class="tag ${cls}">${esc(txt)}</span>`;
+const ST = {good:['good','吉'], bad:['bad','凶'], warn:['warn','注意'], none:['none','未判定']};
+const stTag = s => tag(ST[s][0], ST[s][1]);
+
+/* ================= 三大原則：意味（凶相文字）================= */
+// [対象, 適用位置('name'=名のみ 'any'=姓名とも), 一致条件, 説明]
+const KYOSOU = [
+  ['泉','any',null,'すべての幸せが水に流れて消える意味。'],
+  ['人','nameHead',null,'犠牲者・死者の意味。名の頭や一字名前に用いると凶。'],
+  ['秀子','name',null,'「ひでえ子」の読み下しとなる。'],
+  ['冬','any',null,'寒冷・殺気の意味で、実りが薄い。'],
+  ['秋','any',null,'寒冷・殺気の意味で、実りが薄い。'],
+  ['愛','any',null,'悲しみ・愛傷の深層意味。離別や不幸を招く。'],
+  ['見','any',null,'他人任せ・主体性の欠如。'],
+  ['香','any',null,'実体のない人生。表面だけ華やかで中身が伴わない。'],
+  ['心','nameHead',null,'名の頭に用いると、心が定まらず精神の病みを生む。'],
+  ['正','any',null,'「一」で止まり頭を抑え込まれる構造。行き止まり・中途挫折。'],
+  ['政','any',null,'「正」を含み、行き止まり・中途挫折。'],
+  ['千春','name',null,'千回待っても春が来ない無限ループ。'],
+  ['千夏','name',null,'千回待っても夏が来ない無限ループ。'],
+  ['潤','any',null,'鍋豚（亠）が口を塞ぎ、言いたいことが言えず秘密を溜める。'],
+  ['純','any',null,'鍋豚（亠）が口を塞ぎ、言いたいことが言えず秘密を溜める。'],
+  ['歩','any',null,'少し歩くとすぐ止まる。進展が停滞を繰り返し大成しない。'],
+  ['亜美','name',null,'「歩む」と同じく、少し進んで止まる。'],
+  ['望','any',null,'月を欠いた王。ツキが付かず意志が弱く望みが叶わない。'],
+  ['のぞみ','name',null,'「望」と同じ読み下し。月を欠き望みが叶わない。'],
+  ['音','any',null,'日の上に立つ構造。親や目上を足蹴にし恩を仇で返す。'],
+  ['夢','any',null,'地に足がつかず、現実離れした妄想に憑依される。'],
+  ['海','any',null,'積み上げた財産・人生が水に流れて消滅する最強クラスの水難凶相。'],
+  ['結','any',null,'親族間の金銭・相続トラブルを招く。'],
+  ['綾','any',null,'親族間の金銭・相続トラブルを招く。'],
+  ['涼','any',null,'親族間の金銭・相続トラブルを招く。'],
+  ['陸','any',null,'親族間の金銭・相続トラブルを招く。'],
+  ['零','any',null,'ゼロの王様。すべての成果が最終的に無に帰す。'],
+  ['令','any',null,'ゼロの王様。すべての成果が最終的に無に帰す。'],
+  ['礼','any',null,'ゼロの王様。すべての成果が最終的に無に帰す。'],
+  ['龍','any',null,'架空の生き物・変動の象徴。情緒と人生が極めて不安定。'],
+  ['竜','any',null,'架空の生き物・変動の象徴。情緒と人生が極めて不安定。'],
+  ['辰','any',null,'架空の生き物・変動の象徴。情緒と人生が極めて不安定。'],
+  ['羊','any',null,'暗闇・視界不良。未来が遮られる。'],
+  ['花','any',null,'一瞬だけ咲いてすぐに散る。吉運が極めて短期間で終わる。'],
+  ['杏','any',null,'花と同じく、咲いてすぐ散る運命。'],
+  ['百合','name',null,'花と同じく、咲いてすぐ散る運命。'],
+  ['葵','any',null,'争い・裏社会の意味を含み、闘争と苦難が続く。'],
+  ['草','any',null,'貧困の読み下し。金銭的苦難が絶えない。'],
+  ['金','any',null,'硬すぎる鉱物。周囲と調和せず頑固・孤立を招く。'],
+  ['銀','any',null,'硬すぎる鉱物。周囲と調和せず頑固・孤立を招く。'],
+  ['鉄','any',null,'硬すぎる鉱物。周囲と調和せず頑固・孤立を招く。'],
+  ['春','any',null,'日を覆い縛り上げる構造。いくら待っても春が訪れない。'],
+  ['勝','any',null,'戦い・葛藤の呪能。対人関係で常に衝突を繰り返し、摩擦と論争の絶えない環境を引き寄せる。'],
+  ['達','any',null,'戦い・葛藤の呪能。対人関係で常に衝突を繰り返し、摩擦と論争の絶えない環境を引き寄せる。'],
+  ['竜星','name',null,'龍と星の組み合わせで、地上に固着せず流れ続ける。定職に就けず、落ち着きを欠く。'],
+  ['小春','name',null,'小春日和の「小春」。温かい季節から寒冷へ向かう過渡期で、安定した基盤を持ちにくい。'],
+  ['川','any',null,'流れが速く一箇所に定着しない。運気が安まらず流失し、基盤が確立しない。'],
+  ['洋','any',null,'羊が水に溺れ漂流する象形。人生が翻弄され、成果が流されて定着しない。'],
+  ['霞','any',null,'先が見えず視界が遮られる。将来が暗雲に包まれ、ノイローゼや迷走を招く。'],
+  ['波','any',null,'寄せては返す不規則な変動。人生の好転と悪化を繰り返し、安定を欠く。'],
+  ['水','any',null,'形が定まらず漂流し、財と健康を散失させる。'],
+  ['未','any',null,'木に余分な枝が生えて先が見えない。「お先真っ暗」で、将来性が途中で途絶する。'],
+  ['虎','any',null,'動物名は人間に比べて寿命が短く粗野。短命・粗野な運気を引き、生活が荒廃する。'],
+  ['馬','any',null,'動物名は人間に比べて寿命が短く粗野。短命・粗野な運気を引き、生活が荒廃する。'],
+  ['福','any',null,'幸福や財宝を直接表す文字。名前の器を超えて負の強烈な反動を招き、破滅する。'],
+  ['富','any',null,'幸福や財宝を直接表す文字。名前の器を超えて負の強烈な反動を招き、破滅する。'],
+  ['宝','any',null,'幸福や財宝を直接表す文字。名前の器を超えて負の強烈な反動を招き、破滅する。'],
+  ['皇','any',null,'神聖・高貴すぎる文字。一般人の生命力ではその格に耐えきれず、運気が圧死・破滅する。'],
+  ['姫','any',null,'神聖・高貴すぎる文字。一般人の生命力ではその格に耐えきれず、運気が圧死・破滅する。'],
+  ['帝','any',null,'神聖・高貴すぎる文字。一般人の生命力ではその格に耐えきれず、運気が圧死・破滅する。'],
+  ['神','any',null,'神聖・高貴すぎる文字。一般人の生命力ではその格に耐えきれず、運気が圧死・破滅する。'],  ['熊','any',null,'動物名は人間に比べて寿命が短く生活が不安定。人間の品格と運気の安定を損なう。'],
+  ['一','any',null,'数字は、その数だけ同じ苦労や失敗を繰り返す負の循環を招く（千＝1,000回）。'],
+  ['二','any',null,'数字は、その数だけ同じ苦労や失敗を繰り返す負の循環を招く（千＝1,000回）。'],
+  ['三','any',null,'数字は、その数だけ同じ苦労や失敗を繰り返す負の循環を招く（千＝1,000回）。'],
+  ['九','any',null,'数字は、その数だけ同じ苦労や失敗を繰り返す負の循環を招く（千＝1,000回）。'],
+  ['千','any',null,'数字は、その数だけ同じ苦労や失敗を繰り返す負の循環を招く（千＝1,000回）。'],
+  ['甲','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['乙','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['丙','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['丁','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['戊','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['己','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['庚','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['辛','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['壬','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['癸','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['丑','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['寅','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['卯','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['巳','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['午','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['申','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['酉','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['戌','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['亥','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
+  ['晴','any',null,'気象・季節の字は変動が激しく定まらない。盛衰の波に翻弄され、成果が長続きしない。'],
+  ['雪','any',null,'気象・季節の字は変動が激しく定まらない。盛衰の波に翻弄され、成果が長続きしない。'],
+  ['風','any',null,'気象・季節の字は変動が激しく定まらない。盛衰の波に翻弄され、成果が長続きしない。'],
+  ['幸','any',null,'文字のエネルギーが重すぎ、庶民の生活に馴染まず、逆作用として悲惨な現実を招く。'],
+  ['貴','any',null,'文字のエネルギーが重すぎ、庶民の生活に馴染まず、逆作用として悲惨な現実を招く。'],
+  ['悪','any',null,'品格を損なう字。無意識の自尊心を壊し、社会的な低落を招く。'],
+  ['捨','any',null,'品格を損なう字。無意識の自尊心を壊し、社会的な低落を招く。'],
+  ['肉','any',null,'品格を損なう字。無意識の自尊心を壊し、社会的な低落を招く。'],
+  ['実','any',null,'他人任せの人生となり、自立心を失って他人に依存した結果、共倒れを起こす。'],
+  ['隆','any',null,'コブ（腫瘍・歪み）を意味する字。腫瘍・脳梗塞・大動脈瘤・血栓などの病理的な誘因となる。'],
+  ['留','any',null,'コブ（腫瘍・歪み）を意味する字。腫瘍・脳梗塞・大動脈瘤・血栓などの病理的な誘因となる。'],
+  ['腫','any',null,'コブ（腫瘍・歪み）を意味する字。腫瘍・脳梗塞・大動脈瘤・血栓などの病理的な誘因となる。'],
+  ['切','any',null,'切断・死につながる意味の字。'],
+  ['死','any',null,'切断・死につながる意味の字。'],
+  ['賊','any',null,'品格を損なう字。無意識の自尊心を壊し、社会的な低落を招く。'],
+  ['損','any',null,'品格を損なう字。無意識の自尊心を壊し、社会的な低落を招く。'],
+  ['凡','any',null,'品格を損なう字。無意識の自尊心を壊し、社会的な低落を招く。'],
+  ['末','any',null,'軽蔑を受けやすい字。'],
+  ['留','any',null,'軽蔑を受けやすい字。'],
+  ['亀','any',null,'動物・鉱物の字。堅くて周囲に合わせにくい、または短命で生活が安定しない。'],
+  ['銅','any',null,'動物・鉱物の字。堅くて周囲に合わせにくい、または短命で生活が安定しない。'],
+  ['梅','any',null,'植物・花の字。花は一瞬だけ咲いてすぐ散り、人生の全盛期が短い。'],
+  ['桃','any',null,'植物・花の字。花は一瞬だけ咲いてすぐ散り、人生の全盛期が短い。'],
+  ['菊','any',null,'植物・花の字。花は一瞬だけ咲いてすぐ散り、人生の全盛期が短い。'],
+  ['椿','any',null,'植物・花の字。花は一瞬だけ咲いてすぐ散り、人生の全盛期が短い。'],
+  ['聖','any',null,'尊すぎる字。人間の器を超えた気が宿り、本人の生命力を押し潰す。'],
+  ['王','any',null,'尊すぎる字。人間の器を超えた気が宿り、本人の生命力を押し潰す。'],
+  ['百','any',null,'数字の字。同じ苦労を繰り返す負の循環を招く。'],
+  ['万','any',null,'数字の字。同じ苦労を繰り返す負の循環を招く。'],
+  ['兆','any',null,'数字の字。同じ苦労を繰り返す負の循環を招く。'],
+  ['寿','any',null,'幸福過剰の字。文字の威張りが強すぎ、逆に不幸を呼び寄せる。'],
+  ['茜','any',null,'財布にペンペン草が生える字義となり、終生金銭の苦労が絶えない。'],
+  ['背','any',null,'背き離れる。運気や縁が離れていく。'],
+  ['流','any',null,'運気・財産・命が水に流れる。'],
+  ['操','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['薫','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['美幸','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['実紀','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['好美','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['和美','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['みさお','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['かよ','name',null,'男女の性別がはっきりしない名。善悪や公私の区別がつかない行動を起こしやすく、社会的・人間関係上の混乱を招く。'],
+  ['ゆり','name',null,'花は一瞬だけ咲いてすぐ散る。人生の全盛期が短く、後半は落魄する。'],
+  ['蒼井','name',null,'文字に争いの金気を含み、暴力や裏社会とのトラブルを引き起こす。'],
+  ['あかね','name',null,'財布にペンペン草が生える字義となり、終生金銭の苦労が絶えない。'],
+];
+// 薬と毒の二重性：五大真理が整えば吉、崩れていれば凶になる字
+const DUAL = {
+  '夏':['季節を表す字（春・秋・冬は常に凶）。','五大真理が完全に整えば、稀に使用できる。','季節名はエネルギーの変動が激しく、人生が不安定になる。'],
+  '誠':['死者の霊を鎮める呪術の形。','絶対的な誠実さを表す至高の吉文字。','生き倒れ・孤独死のような悲惨な最期を招く副作用が出る。'],
+  '七':['骨を切断した切り口の象形。','完成・成就を意味する。','肉体・人生・人間関係の切断・断絶を引き起こす。'],
+  '桜':['感受性の高い字。','五大真理が整えば吉の作用。','五大真理が崩れると凶の副作用が出る。'],
+  '瞳':['易の山水蒙（幼くして目が開かれていない状態）。','澄んだ洞察力となる。','40代・50代でも子供のように世間知らずで盲目的な判断を繰り返し、自滅する。'],
+  '順':['鍋豚（亠）が口を塞ぐ構造。','五大真理が整えば吉の作用。','言いたいことが言えず、秘密や隠し事を溜め込む。'],
+};
+const DAKUON = /[がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽゔ]/;
+const CHOU_CHARS = ['一','太','長','大']; // 長男の字（一郎・太郎など）
+const JI_CHARS = ['二','次'];             // 次男の字（次郎・慎次など）
+
+/* ================= 辞典照会 ================= */
+// ひらがなの画数（一般的な画数。濁点は+2、半濁点は+1、小書き文字は元の字と同じ）
+const KANA_STROKE = {'あ':3,'い':2,'う':2,'え':2,'お':3,'か':3,'き':4,'く':1,'け':3,'こ':2,'さ':3,'し':1,'す':2,'せ':3,'そ':1,
+  'た':4,'ち':2,'つ':1,'て':1,'と':2,'な':4,'に':3,'ぬ':2,'ね':2,'の':1,'は':3,'ひ':1,'ふ':4,'へ':1,'ほ':4,
+  'ま':3,'み':2,'む':3,'め':2,'も':3,'や':3,'ゆ':2,'よ':2,'ら':2,'り':2,'る':1,'れ':2,'ろ':1,'わ':2,'を':3,'ん':1};
+const KANA_SMALL = {'ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','っ':'つ','ゃ':'や','ゅ':'ゆ','ょ':'よ','ゎ':'わ'};
+const KANA_GYO = (()=>{ const m={}; const add=(g,cs)=>{ for(const c of cs) m[c]=g; };
+  add('木','かきくけこ'); add('火','たちつてとなにぬねのらりるれろ'); add('土','あいうえおやゆよわを'); add('金','さしすせそ'); add('水','はひふへほまみむめも'); return m; })();
+function kanaEntry(ch){
+  const d = kata2hira(ch).normalize('NFD'); const base0=[...d][0]; const base = KANA_SMALL[base0]||base0;
+  if(!(base in KANA_STROKE)) return null;
+  const mark = d.includes('\u3099') ? 2 : d.includes('\u309a') ? 1 : 0;
+  // 濁音・半濁音の五行は、清音の行と同じ
+  return {c:ch, k:'', n:KANA_STROKE[base]+mark, g:KANA_GYO[base]||'', m:'', y:'', a:'', p:0, f:0, kana:1};
+}
+function lookupChars(str){
+  let prev='';
+  return [...str].map(ch=>{
+    const key = (ch==='々' && prev) ? prev : ch;   // 々は直前の字として数える
+    prev = key;
+    let list = BYCHAR.get(key)||[];
+    if(!list.length && /[ぁ-ゖ]/.test(key)){ const e=kanaEntry(key); if(e){ e.y = ''; list=[e]; } }
+    return {ch, list, sel:0};
+  });
+}
+function readingsOf(entry){
+  if(entry.kana) return [kata2hira(entry.c)];
+  // 音読み（ひらがな）／訓読み／名乗り
+  const out = [];
+  const y = (entry.y||'').replace(/[（(][^）)]*[）)]/g,'');
+  const [onPart, kunPart=''] = y.split('／');
+  for(const t of onPart.split(/[・\s]/)) if(t) out.push(kata2hira(t));
+  for(const t of kunPart.split(/[・\s]/)) if(t) out.push(t);
+  for(const t of (entry.a||'').split(/[・\s]/)) if(t) out.push(t.replace(/[「」]/g,''));
+  return [...new Set(out.filter(t=>/^[ぁ-ゟー]+$/.test(t)))];
+}
+const devoice = s => s.replace(/[がぎぐげござじずぜぞだぢづでどばびぶべぼ]/g, c=>String.fromCharCode(c.charCodeAt(0)-1))
+                      .replace(/[ぱぴぷぺぽ]/g, c=>String.fromCharCode(c.charCodeAt(0)-2));
+function alignReading(reading, charInfos){
+  // 読みを漢字ごとに切り分けられるかの目安（当て字の疑い判定用）
+  const R = reading, n = charInfos.length;
+  const cand = charInfos.map(ci=>{
+    const toks = new Set();
+    for(const e of ci.list) for(const t of readingsOf(e)) toks.add(t);
+    return [...toks];
+  });
+  const memo = new Map();
+  function dfs(i,p){
+    if(i===n) return p===R.length;
+    const key=i+','+p; if(memo.has(key)) return memo.get(key);
+    let ok=false;
+    for(const t of cand[i]){
+      const lens = new Set([t.length]); if(t.length>=3) lens.add(2); if(t.length>=2) lens.add(1);
+      for(const L of lens){
+        const piece = t.slice(0,L);
+        const seg = R.slice(p,p+L);
+        if(seg.length===L && (seg===piece || devoice(seg)===devoice(piece))){ if(dfs(i+1,p+L)){ok=true;break;} }
+      }
+      if(ok) break;
+    }
+    memo.set(key,ok); return ok;
+  }
+  if(cand.some(c=>c.length===0)) return null; // 辞典に無い字がある
+  return dfs(0,0);
+}
+
+/* ================= 計算 ================= */
+function compute(seiStr, meiStr, ov){
+  const sei = lookupChars(seiStr), mei = lookupChars(meiStr);
+  const all = [...sei, ...mei];
+  all.forEach((c,i)=>{ c.idx=i; c.part = i<sei.length?'sei':'mei'; });
+  const strokes = all.map(c=>{
+    if(ov && ov.n && ov.n[c.idx]!=null && ov.n[c.idx]!=='') return Number(ov.n[c.idx]);
+    if(ov && ov.sel && ov.sel[c.idx]!=null) c.sel = ov.sel[c.idx];
+    const e = c.list[c.sel]; return e? e.n : null;
+  });
+  all.forEach((c,i)=>{ c.n=strokes[i]; c.entry=c.list[c.sel]||null; });
+  return {sei, mei, all};
+}
+function parts(seiN, meiN){
+  const sum = a=>a.reduce((x,y)=>x+y,0);
+  const s0=seiN[0], sL=seiN[seiN.length-1], m0=meiN[0], mL=meiN[meiN.length-1];
+  return {
+    tenkaku: sum(seiN), jinkaku: sL+m0, chikaku: sum(meiN), soukaku: sum(seiN)+sum(meiN),
+    tensuu: s0, chisuu: m0, teisuu: mL
+  };
+}
+
+/* ================= 判定 ================= */
+function judgeShape(sei, mei, flags, baseBad){
+  const items = [];
+  const L = (cls,t,d)=>items.push({st:cls,t,d});
+  if(mei.length===1 && sei.length>=2) L('bad','一字名前（頭重足軽）','足元が不安定。若年期に急浮上しても後半で失速しやすい。');
+  else if(mei.length===1 && sei.length===1) L('bad','一字姓一字名','一字名前以上に不安定。職を転々とし、串刺し状の苦難に見舞われやすい。');
+  else L('good','文字数の構成','一字名前・一字姓一字名には当たりません。');
+  if(flags.tate) L('bad','縦分離名（へんとつくりで左右に割れる）','人生の中断・挫折、組織の分裂、身体の切断を暗示。');
+  if(flags.yoko) L('bad','横分離名（かんむり等で上下に割れる）','精神面の不調、頭部と胴体の切断を暗示。（安・正のように、上部または下部だけでは漢字として成り立たないものは、横分離としません）');
+  if(flags.shibari && baseBad!==null && baseBad!==undefined){
+    if(baseBad) L('bad','縛り（部首・偏旁の重複）','凶名のため、実家・肩書き・お金・人間関係の問題に縛られ、自由に動けなくなる縛りの作用が出ます。（偏の重複は軽く、作りの重複はより強く出ます）');
+    else L('good','縛り（部首・偏旁の重複）','正名のため、重複は吉に転じます（口の重複は良い言葉を発する力、人偏の重複は人との結びつきの強化など。良いことを繰り返し行います）。');
+  }
+  if(!flags.tate && !flags.yoko && !flags.shibari) L('none','縦分離・横分離・縛り','自動判定できません。字形を見て、上のチェックで指定してください。');
+  return items;
+}
+function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad){
+  const items=[]; const hits=[];
+  for(const [pat,pos,,note] of KYOSOU){
+    if(pos==='any'){
+      if(meiStr.includes(pat)) hits.push({where:'名',pat,note});
+      else if(seiStr.includes(pat)) hits.push({where:'姓（参考）',pat,note,ref:true});
+    }else if(pos==='name'){
+      if(meiStr.includes(pat) || (yomi && yomi.includes(pat))) hits.push({where:'名',pat,note});
+    }else if(pos==='nameHead'){
+      if(meiStr.startsWith(pat) || (pat==='心' && ((yomi && yomi.startsWith('こころ')) || kata2hira(meiStr).startsWith('こころ')))) hits.push({where:'名',pat,note});
+      else if(pat==='人' && meiStr.length===1 && meiStr==='人') hits.push({where:'名',pat,note});
+    }
+  }
+  for(const h of hits) items.push({st:h.ref?'warn':'bad', t:`凶相文字「${h.pat}」（${h.where}）`, d:h.note});
+  // 長男・次男の逆転
+  if(zoku==='chou' && [...meiStr].some(c=>JI_CHARS.includes(c))) items.push({st:'bad',t:'長男に次男の字',d:'家督をめぐる紛争、能力を発揮できない、組織内の下克上を招く。'});
+  if(zoku==='ji' && [...meiStr].some(c=>CHOU_CHARS.includes(c))) items.push({st:'bad',t:'次男に長男の字',d:'家督をめぐる紛争、能力を発揮できない、組織内の下克上を招く。'});
+  if(baseBad!==null && baseBad!==undefined){
+    for(const ch of new Set([...meiStr])){
+      const d=DUAL[ch]; if(!d) continue;
+      items.push(baseBad ? {st:'bad',t:`「${ch}」は薬が毒に転じます`,d:`${d[0]}他の真理に凶があるため、${d[2]}`}
+                         : {st:'good',t:`「${ch}」は薬として働きます`,d:`${d[0]}他の真理に凶がないため、${d[1]}`});
+    }
+  }
+  if(!items.length) items.push({st:'good',t:'凶相文字',d:'レポートに挙げられた凶相文字は見当たりません。'});
+  items.push({st:'none',t:'字の成り立ち（白川静の字源）',d:'上の表にない字は自動判定できません。字の成り立ちは別途ご確認ください。'});
+  return items;
+}
+const SOUND_HEAD = [
+  ['こころ','易の「三水蒙」と同調し、幼く目暗同然。年齢を重ねても何も見えない判断で失敗を繰り返す無条件の凶名。'],
+  ['かおり','香りだけで実態のない人生。手足が縛られて自由が効かない。'],
+  ['ここ','「こころ」と同じく、心（愛情）に飢えている状態を暗示し、精神的な苦痛や不遇な環境を引き寄せる。'],
+  ['ひろみ','「拾い身」に通じ、他人の廃品や捨てるような苦労を拾い集める人生。'],
+  ['あい','悲哀の「哀」と同調し、愛を求めるほど悲しい別れや愛憎劇に苛まれる。'],
+  ['ひと','古代の犠牲（生け贄）の呪能が発動し、自他を死傷させる。'],
+  ['いずみ','幸せが水に流れて消滅する流失の構造。'],
+  ['ゆり','名頭に置くと、特定の運命的な摩擦を引き起こす（資料には理由の記載なし）。'],
+  ['あおい','戦いの波長。人間関係の摩擦・葛藤・争いが絶えず、精神的な安寧を得られない。'],
+  ['あすか','飛鳥・明日の象意で、足元が定まらず、目標が変転して未完成のまま挫折しやすい。'],
+  ['ひかり','瞬間的な過剰露出で持続的な実体を欠き、燃え尽きて自滅しやすい。'],
+  ['あみ','少し進んで止まる。継続性を失い、仕事や目標が中途半端で頓挫する。'],
+  ['まい','少し歩いてすぐ止まり、人生が前進しない。'],
+  ['あゆみ','少し歩いてすぐ止まり、人生が前進しない。'],
+  ['あゆむ','少し歩いてすぐ止まり、人生が前進しない。'],
+  ['のぞみ','月（ツキ）が無い王で、気が弱く望みが叶わない。'],
+  ['こはる','小春日和の「小春」。温かい季節から寒冷へ向かう過渡期で、温かい家庭や安定した基盤を持ちにくい。'],
+];
+const isKanaOnly = s => /^[ぁ-ゟァ-ヿー]+$/.test(s);
+function judgeSound(yomi, meiChars, yomiSei, meiStr){
+  const items=[];
+  const kanaName = isKanaOnly(meiStr||'') ? kata2hira(meiStr) : '';     // 名をひらがなで表記している場合
+  const reading = yomi || kanaName;
+  if(!reading){ items.push({st:'none',t:'読み',d:'名の読みを入力すると、濁音・当て字の疑い・名頭の音を調べます。'}); return items; }
+  // 濁音・「ン」は、仮名（ひらがな）表記のときだけ問題とする（講義：「健治」OK／「けんじ」NG、「純也」OK）
+  const kanaPart = kata2hira([...(meiStr||'')].filter(c=>/[ぁ-ゖァ-ヺ]/.test(c)).join(''));
+  if(DAKUON.test(kanaPart)) items.push({st:'bad',t:'ひらがな表記に濁音を含む',d:'人生に余分なものがついてくる。本来負う必要のない余分な苦労・トラブル・他人の債務や子供の面倒などが付き纏う。'});
+  else if(yomi && DAKUON.test(yomi)) items.push({st:'good',t:'濁音',d:'読みに濁音がありますが、漢字表記なら問題ありません（ひらがな表記だと凶）。'});
+  else items.push({st:'good',t:'濁音',d:'濁音は含まれません。'});
+  if(kanaPart.slice(0,-1).includes('ん')) items.push({st:'warn',t:'名の途中に仮名の「ん」',d:'途中の「ん」は△。語尾の「ん」ほどは悪くないが、好ましくありません。'});
+  // 「ん」止まりは、ひらがな表記のときだけ
+  if(/ん$/.test(kata2hira(meiStr||''))) items.push({st:'bad',t:'ひらがな表記で「ん」で終わる',d:'音の進行が止まる打ち止めの構造。人生の進展・事業の拡大がそこで天井にぶつかる。'});
+  else if(yomi && yomi.endsWith('ん')) items.push({st:'good',t:'「ん」止まり',d:'漢字表記の読みに含まれる「ん」は、打ち止めの凶構造にはなりません。'});
+  // 名頭の凶音
+  const head = SOUND_HEAD.find(([h])=>reading.startsWith(h));
+  if(head) items.push({st:'bad',t:`名頭の音「${head[0]}」`,d:head[1]});
+  if(yomiSei){
+    const K=[...yomiSei].filter(c=>c!=='ー'), M=[...reading].filter(c=>c!=='ー');
+    const rep_=[];
+    if(K.length&&M.length && K[0]===M[M.length-1]) rep_.push(`姓の最初の音「${K[0]}」と名の最後の音「${M[M.length-1]}」`);
+    if(rep_.length) items.push({st:'bad',t:'同一音の重複',d:`${rep_.join('、')}が同じ音です。姓と名にまたがって同じ音が反復する構造は、同じ苦労や失敗を繰り返す凶名とされます。`});
+    else items.push({st:'good',t:'同一音の重複',d:'姓と名にまたがる同じ音の反復は見当たりません。'});
+  }
+  if(!kanaName){
+    const al = alignReading(reading, meiChars);
+    if(al===null) items.push({st:'none',t:'音と字の対応',d:'辞典に無い字があるため調べられません。'});
+    else if(al) items.push({st:'good',t:'音と字の対応',d:'読みを、辞典の音訓・名乗りで漢字ごとに切り分けられます。'});
+    else items.push({st:'warn',t:'当て字の疑い',d:'辞典の音訓・名乗りでは読みを切り分けられません。音と意味が解離していると、思考と行動の乖離・情緒不安定を招く。ただし名乗りの収録漏れの可能性もあります。'});
+  }
+  return items;
+}
+
+/* 五行 */
+function judgeGogyo(chars, seiLen){
+  // 五行は字音（辞典の五行＝音読みの行）だけで判定する
+  const items=[]; let st='good';
+  const a = chars.map(c=>c.entry?c.entry.g:null);
+  const line = `字音の五行：${a.map((g,i)=>chars[i].ch+(g||(chars[i].ch==='ん'?'（五行なし）':'？'))).join('　')}`;
+  const hit=(cls)=>{ if(cls==='bad') st='bad'; else if(cls==='warn' && st!=='bad') st='warn'; };
+  const BAD_PAIR=['火火','水水','火水','水火'];
+  const x=a[seiLen-1], y=a[seiLen];
+  if(x&&y){
+    if(BAD_PAIR.includes(x+y)){ items.push({st:'bad',t:`人格接続部が${x}－${y}`,d:'人格接続部（姓の最後の字と名の最初の字）の火－火・水－水・火－水・水－火は、無条件で大凶。'}); hit('bad'); }
+    else if(x+y==='火金'||x+y==='金火'){ items.push({st:'warn',t:`人格接続部が${x}－${y}（火克金）`,d:'火が金を攻める相克の配置です。火が金を溶かし、財産・家族の結束・身体基盤を損なうとされます。大凶とされる火火・水水・火水・水火には当たりません。'}); hit('warn'); }
+    else items.push({st:'good',t:'人格接続部',d:`${x}－${y}で、火火・水水・火水・水火にも、火克金にも当たりません。`});
+  }else items.push({st:'none',t:'人格接続部',d:'辞典に無い字があるため判定できません。'});
+  if(chars.length>=3 && a.every(Boolean)){
+    const k=new Set(a).size;
+    if(k===1){ items.push({st:'bad',t:'五行が1種類に集中',d:'極端な集中。その五行に対応する病気や性格の偏りを引き起こす。'}); hit('bad'); }
+    else if(k===2){ items.push({st:'warn',t:'五行が2種類のみ',d:'五行は3種類以上が理想。2種類以下への偏りは、その五行に対応する病気や性格の偏りを引き起こす。'}); hit('warn'); }
+    else items.push({st:'good',t:'五行の種類',d:k>=4?`${k}種類あり、非常に良い配置です。`:`${k}種類あり、理想の3種類以上です。`});
+  }
+  const pairs=[];
+  if(x&&y) pairs.push({n:'人格（姓の最後の字と名の最初の字）',a:x,b:y});
+  if(chars.length-seiLen>=2){ const m0=a[seiLen], m1=a[a.length-1]; if(m0&&m1) pairs.push({n:'地格（名の最初の字と最後の字）',a:m0,b:m1}); }
+  return {st, items, line, pairs};
+}
+/* 陰陽（姓名鑑定講座・ハンドブックの鑑査基準） */
+function inyouBlock(m){
+  if(m.length===1) return {b:[m[0],m[0]], note:'1文字のため、同じ陰陽がもう1つあると見立てます。'};
+  if(m.length===2) return {b:m, note:''};
+  const r=[]; for(const x of m) if(!r.length||r[r.length-1]!==x) r.push(x);
+  if(r.length===1) return {b:[r[0],r[0]], note:'同じ陰陽の連続を1つにまとめました。'};
+  if(r.length===2) return {b:r, note:'同じ陰陽の連続を1つにまとめました。'};
+  return {b:[r[0],r[r.length-1]], note:'3つ以上の交互配列のため、最初と最後の陰陽で見立てました（暫定）。'};
+}
+const INYOU_PAT = {
+  '1010':['善良','good','完全陰陽。思考と行動が天地自然の理に即し、物事が円滑に運んで良い人材や縁が集まる。自律神経や心身のバランス、対人関係の調和が保たれやすい。'],
+  '0101':['善良','good','完全陰陽。思考と行動が天地自然の理に即し、物事が円滑に運んで良い人材や縁が集まる。自律神経や心身のバランス、対人関係の調和が保たれやすい。'],
+  '1111':['片寄り（全陽）','bad','表面的には明るく竹を割ったような性格だが、あることないことを語りやすく、いざという時に脆い。良い時は良いが悪い時はとことん悪くなる極端な運勢。勝負所で体調を壊しやすい。'],
+  '0000':['片寄り（全陰）','bad','内向的で暗く、マニアック・凝り性。持続力はあるが自分のことを語らない。良い時は良いが悪い時はとことん悪くなる極端な運勢。勝負所で体調を壊しやすい。'],
+  '1000':['蒔き直し（上）','bad','何度も種を蒔く。7〜8割まで進めても最後で悪くなり振り出しに戻る。同じ失敗ややり直しを繰り返し、お金が残りにくい。'],
+  '0111':['蒔き直し（上）','bad','何度も種を蒔く。7〜8割まで進めても最後で悪くなり振り出しに戻る。同じ失敗ややり直しを繰り返し、お金が残りにくい。'],
+  '1110':['蒔き直し（下）','bad','何度も種を蒔く。7〜8割まで進めても最後で悪くなり振り出しに戻る。同じ失敗ややり直しを繰り返し、お金が残りにくい。'],
+  '0001':['蒔き直し（下）','bad','何度も種を蒔く。7〜8割まで進めても最後で悪くなり振り出しに戻る。同じ失敗ややり直しを繰り返し、お金が残りにくい。'],
+  '1011':['縛り（上）','bad','後ろ髪を引かれている状態。家庭・実家・仕事・お金・肩書き・親などに縛られ、自由に言えず行動できない。半身不随や神経系の疾患を起こしやすい。'],
+  '0100':['縛り（上）','bad','後ろ髪を引かれている状態。家庭・実家・仕事・お金・肩書き・親などに縛られ、自由に言えず行動できない。半身不随や神経系の疾患を起こしやすい。'],
+  '1101':['縛り（下）','bad','後ろ髪を引かれている状態。家庭・実家・仕事・お金・肩書き・親などに縛られ、自由に言えず行動できない。半身不随や神経系の疾患を起こしやすい。'],
+  '0010':['縛り（下）','bad','後ろ髪を引かれている状態。家庭・実家・仕事・お金・肩書き・親などに縛られ、自由に言えず行動できない。半身不随や神経系の疾患を起こしやすい。'],
+  '1001':['大挟み','bad','大凶を超える大凶。窓のない牢獄のような人生で、上下・左右・対人関係の強烈な板挟みに遭う。耐忍力は強く平社員には重宝されるが、部長以上・経営幹部につけてはならない。50歳前後からの蓄積で自爆的な破壊行動を起こし、組織を巻き込む。'],
+  '0110':['大挟み','bad','大凶を超える大凶。窓のない牢獄のような人生で、上下・左右・対人関係の強烈な板挟みに遭う。耐忍力は強く平社員には重宝されるが、部長以上・経営幹部につけてはならない。50歳前後からの蓄積で自爆的な破壊行動を起こし、組織を巻き込む。'],
+  '1100':['中断','bad','大凶を超える大凶。能力が高く前半は順調だが、42〜55歳頃に大事故・大病・破滅で人生が二分される。事故・事件の確率が高く、周囲の運気の弱い人を巻き込む。'],
+  '0011':['中断','bad','大凶を超える大凶。能力が高く前半は順調だが、42〜55歳頃に大事故・大病・破滅で人生が二分される。事故・事件の確率が高く、周囲の運気の弱い人を巻き込む。'],
+};
+function judgeInyou(seiN, meiN, honmei, flags){
+  const sb=inyouBlock(seiN.map(n=>isYang(n)?1:0)), mb=inyouBlock(meiN.map(n=>isYang(n)?1:0));
+  const bits=[...sb.b,...mb.b]; const key=bits.join('');
+  const std = bits.map(x=>x?'〇':'●'); const stdStr = `${std[0]}${std[1]}／${std[2]}${std[3]}`;
+  const [name,cls,desc]=INYOU_PAT[key];
+  const items=[]; const notes=[sb.note&&('姓：'+sb.note), mb.note&&('名：'+mb.note)].filter(Boolean);
+  items.push({st:cls,t:name,d:desc});
+  if(meiN.length===1) items.push({st:'bad',t:'一文字名前',d:'名前だけでは陽と陰の対を作れず、命が半分の状態。若年期に急成功してもエネルギーを使い果たして不安定になる。原理的に凶相（原則使用不可）。'});
+  const star = honmei? honmei.slice(0,2):'';
+  if(name.startsWith('蒔き直し') && (star==='三碧'||star==='四緑')) items.push({st:'bad',t:'蒔き直しと三碧・四緑',d:'木星は伸びてはやり直す性質を持つため、成果直前の挫折・リセットが著しく強烈に現れる。'});
+  if(name.startsWith('縛り') && ['二黒','五黄','八白'].includes(star)) items.push({st:'warn',t:'縛りと土星',d:'土星は保守的で地道な環境に耐性があり、縛りの配列でも比較的苦にならない。'});
+  if((name.startsWith('縛り')||name==='中断') && ['九紫','六白'].includes(star)) items.push({st:'bad',t:`${name==='中断'?'中断':'縛り'}と${star}`,d:'抑圧への不満や葛藤が激しく噴出し、頭部の疾患・激しい人間関係の衝突・突然の破滅を引き起こしやすい。'});
+  if(name==='中断'){
+    if(star==='一白'||star==='九紫') items.push({st:'bad',t:'中断と本命星',d:'本命が一白水星・九紫火星の場合、中断の凶作用は2倍以上になる。'});
+    if(flags && flags.tate) items.push({st:'bad',t:'中断と縦分離名',d:'縦分離名が重なると、中断の凶作用は2倍以上になる。'});
+  }
+  const st = (cls==='good' && !items.some(i=>i.st==='bad'))?'good':'bad';
+  return {st, std:stdStr, notes, items};
+}
+/* 画数（ハンドブック「画数の深義」） */
+const GCLS = {'大吉':'good','吉':'good','中':'warn','凶':'bad','大凶':'bad'};
+const GLAB = {'大吉':'大吉','吉':'吉','中':'吉凶中端','凶':'凶','大凶':'大凶'};
+const foldN = v => v>81 ? ((v-1)%80)+1 : v;   // 81画で1に戻る
+function kakuInfo(v){
+  const n=foldN(v), base=KAKU_BY[n]; if(!base) return null;
+  const g = (KAKU && KAKU[String(v)]) || (KAKU && KAKU[String(n)]) || base.g;
+  return {n, v, base, g, over:g!==base.g};
+}
+function judgeKaku(P, kyoOther){
+  const rows=[]; let bad=false, good=0, warn=false, strong=false;
+  const parts_=[['人格',P.jinkaku,'中年期（数え28〜54歳）'],['地格',P.chikaku,'初年期（数え1〜27歳）'],['総格',P.soukaku,'晩年期（数え55歳〜）'],['地数',P.chisuu,'全生涯の基盤（最重要部位）']];
+  for(const [n,v,role] of parts_){
+    const k=kakuInfo(v); const notes=[];
+    let g=k.g; const nn=k.n;
+    // 講義レジュメ（4-5 画数）の扱い
+    if([19,20,24,44,49].includes(nn)){ g = g==='大凶'?'大凶':'凶'; notes.push('命名・選名のどちらも×。'); }
+    if(n!=='総格' && [9,19].includes(nn)){ g = g==='大凶'?'大凶':'凶'; notes.push('人格・地格・地数では×。'); }
+    if([12,14,22].includes(nn)){
+      if(n==='総格'){ g = g==='大凶'?'大凶':'凶'; notes.push('総画はNG。'); }
+      else { g = kyoOther ? '凶' : '中'; notes.push('五大真理が整っていればOK（総画はNG）。'); }
+    }
+    if(nn===32) notes.push('選名ならOK。気品のある高貴な名前なら可。命名でつけると体が弱くなりやすい。');
+    else if([30,40,42,43,50,52,53].includes(nn)) notes.push('選名ならOK（命名では避ける）。');
+    if(n==='総格' && [26,35].includes(nn)) notes.push('総画26・35は芸名なら◎。私生活の問題が重い。');
+    if(n==='総格' && [25,35].includes(nn)) notes.push('総画25・35は計算力が高く、会計に向く。');
+    const cls=GCLS[g]; if(cls==='bad') bad=true; else if(cls==='good') good++; else warn=true;
+    if(STRONG_NUMS.includes(nn)) strong=true;
+    rows.push({n,v,role,k:{...k,g},cls,notes});
+  }
+  const refs=[['点数',P.tensuu,'家系の入口（姓の最初の字）'],['定数',P.teisuu,'結末・着地点（名の最後の字）']].map(([n,v,role])=>({n,v,role,k:kakuInfo(v)}));
+  const st = bad?'bad':(good===rows.length?'good':'warn');
+  return {st, rows, refs, strong};
+}
+
+/* 天地・天底（Googleドキュメント「天地・天底の配合」の鑑査基準） */
+function judgeTenchi(P, honmei, upper){
+  const ten=P.tensuu, chi=P.chisuu, tei=P.teisuu;
+  const items=[]; let st='good';
+  const add=(s_,t,d)=>{ items.push({st:s_,t,d}); if(s_==='bad') st='bad'; else if(s_==='warn' && st!=='bad') st='warn'; };
+  // 天地同数
+  if(ten===chi){
+    let extra='';
+    if(honmei && (honmei.startsWith('六白')||honmei.startsWith('五黄'))) extra+='本命星が六白・五黄のため、最も強く揉めます。';
+    if(P.tenGyo==='火') extra+='火の五行の天地同数は、最も強く揉める・暴走するとされます。';
+    add('bad',`天地同数（点数${ten}画・地数${chi}画）`,'大凶を超える大凶。天と地が張り合って離れ、直属の上司・社長・目上との関係が決裂・衝突します。肉体と精神の分離や難病など、健康も著しく害されるとされます。'+extra);
+  }
+  // 天地衝突
+  const clash = n => [3,5,9].includes(n%10);
+  if(ten!==chi && clash(ten) && clash(chi)){
+    add('bad',`天地衝突（点数${ten}画・地数${chi}画）`,'凶の相。感情的な喧嘩・反発が激しく、直属の上司・責任者・目上に突っかかりやすい。上下関係にネジレが生じて物別れとなり、実りや収入に結びつきにくい。画数が大きいほど強まります。');
+  }
+  // 天地相同数
+  if(P.tenkaku===P.chikaku){
+    add('bad',`天地相同数（天格${P.tenkaku}画・地格${P.chikaku}画）`,'大凶を超える大凶（大事件数）。やること成すことが裏目に出る。活動や事業の規模が小さいうちは目立たないが、規模が拡大した途端に破滅的な大トラブルへ発展するため、組織・会社に入れてはならない名前とされます。');
+  }
+  // 天大地小・天小地大（講義：画数の差の定義は無い。目安は「概ね2倍を超える」画数の不均衡と、文字数の上下バランス）
+  const big=Math.max(P.tenkaku,P.chikaku), small=Math.min(P.tenkaku,P.chikaku);
+  const DAI='頭で考えるのは得意だが、行動力・実行力に欠ける頭でっかち・足元虚弱。精神のバランスを崩しやすく、ノイローゼや頭部・脳の疾患が出やすい傾向。';
+  const SHO='足元（行動力）は強いが、深く考えずに動いて先々でトラブル・障害・摩擦を起こしやすい。';
+  let dai=null, sho=null;
+  const ratio = big/small;
+  if(ratio>=1.8){
+    const w = ratio>2 ? '2倍を超えています' : '約2倍です';
+    if(P.tenkaku>P.chikaku) dai=`天格${P.tenkaku}画が地格${P.chikaku}画の${w}。`; else sho=`地格${P.chikaku}画が天格${P.tenkaku}画の${w}。`;
+  }
+  if(P.seiLen>=4 && P.meiLen===1){ dai=(dai?dai+'また、':'')+`${P.seiLen}文字の苗字に1文字の名前で、上が重すぎます（4文字苗字なら名前は最低2文字、できれば3文字）。`; }
+  if(P.seiLen===1 && P.meiLen>=3){ sho=(sho?sho+'また、':'')+`1文字の苗字に${P.meiLen}文字の名前で、下が重すぎます。`; }
+  if(dai) add('warn','天大地小',dai+DAI);
+  if(sho) add('warn','天小地大',sho+SHO);
+  if(!items.length) items.push({st:'good',t:'天地の配合',d:`天地同数・天地衝突・天地相同数・天大地小・天小地大のいずれにも当たりません（天大地小・天小地大は、画数が2倍程度（1.8倍以上）離れているか、文字数の上下が極端に偏っているかで判定）。`});
+  const tenchiSt = st;
+  // 天底（点数×定数）
+  const dIt=[]; let dst='good';
+  if(ten===tei){
+    const bad = [upper.yomi,upper.gogyo,upper.inyou,tenchiSt].some(x=>x==='bad');
+    if(bad){ dst='bad'; dIt.push({st:'bad',t:`天底同数（点数${ten}画・定数${tei}画）が作動`,d:'名前を毛書きに切る「大動角」。社会運・家庭運の急変、不慮の事故（難死）を誘発する凶相。五大真理に崩れがある凶名のため、凶作用が表面化します。'}); }
+    else dIt.push({st:'good',t:`天底同数（点数${ten}画・定数${tei}画）は不活性`,d:'天底の配合は、五大真理のいずれかに崩れがある凶名のときだけ作用します。上位の真理に凶が無いため、悪影響は出ません（読み下しを自動判定のままにしている場合は、読み下しの判断もご確認ください）。'});
+  }else dIt.push({st:'good',t:'天底の配合',d:`点数${ten}画と定数${tei}画は同数ではありません。`});
+  const all = (st==='bad'||dst==='bad')?'bad':(st==='warn'?'warn':'good');
+  return {st:all, tenchi:{st,items}, teitei:{st:dst,items:dIt}, ten, chi, tei};
+}
+
+/* ================= 九星（生年月日から） ================= */
+const STARS=['','一白水星','二黒土星','三碧木星','四緑木星','五黄土星','六白金星','七赤金星','八白土星','九紫火星'];
+const ELEM=['','水','土','木','木','土','金','金','土','火'];
+const KYU=['中宮','乾（西北）','兌（西）','艮（東北）','離（南）','坎（北）','坤（南西）','震（東）','巽（南東）'];
+const GEN={'木':'火','火':'土','土':'金','金':'水','水':'木'};   // 相生
+const JST=9*3600000;
+function parseDateText(v){
+  v=(v||'').trim().replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248));
+  let m=v.match(/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})\D*$/)||v.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if(!m) return null;
+  const y=+m[1], mo=+m[2], d=+m[3];
+  if(y<1850||y>2100||mo<1||mo>12) return null;
+  if(d<1||d>new Date(y,mo,0).getDate()) return null;
+  return {y,m:mo,d};
+}
+function parseBirth(){
+  const r=parseDateText(document.getElementById('birth').value); if(!r) return null;
+  const {y,m,d}=r;
+  const t=document.getElementById('birthT').value; const hasT=!!t;
+  const [H,Mi]=(t||'12:00').split(':').map(Number);
+  return {y,m,d,hasT,date:new Date(Date.UTC(y,m-1,d,H,Mi)-JST)};
+}
+function starOfYear(y){ const r=(11-(y%9))%9; return r===0?9:r; }
+// 太陽黄経（Meeus 低精度式・誤差およそ数分）
+function sunLon(jd){
+  const T=(jd-2451545)/36525, L0=280.46646+36000.76983*T, M=(357.52911+35999.05029*T)*Math.PI/180;
+  const C=(1.914602-0.004817*T)*Math.sin(M)+0.019993*Math.sin(2*M)+0.000289*Math.sin(3*M);
+  const om=(125.04-1934.136*T)*Math.PI/180;
+  return (((L0+C-0.00569-0.00478*Math.sin(om))%360)+360)%360;
+}
+const toJD=ms=>ms/86400000+2440587.5, fromJD=jd=>(jd-2440587.5)*86400000;
+const SETSU_CACHE={};
+function setsuMs(yy,k){            // 九星年yy・月番号k(0=寅月/立春…11=丑月/小寒)の節入り時刻(ms)
+  const key=yy+'_'+k; if(SETSU_CACHE[key]) return SETSU_CACHE[key];
+  const target=(315+30*k)%360, mo=2+k, gy=mo>12?yy+1:yy, gm=mo>12?mo-12:mo;
+  let lo=toJD(Date.UTC(gy,gm-1,5))-12, hi=lo+24;
+  const f=jd=>{ let x=sunLon(jd)-target; x=((x+540)%360)-180; return x; };
+  for(let i=0;i<50;i++){ const mid=(lo+hi)/2; if(f(mid)<0) lo=mid; else hi=mid; }
+  return SETSU_CACHE[key]=fromJD((lo+hi)/2);
+}
+function ymOf(date){               // 節入りで区切った九星年と月番号
+  const t=date.getTime(), jy=new Date(t+JST).getUTCFullYear();
+  let best=null;
+  for(const yy of [jy-1,jy]) for(let k=0;k<12;k++){ const ts=setsuMs(yy,k); if(ts<=t && (!best||ts>best.ts)) best={y:yy,k,ts}; }
+  return best;
+}
+const yearStar=date=>starOfYear(ymOf(date).y);
+function monthStar(yStar,k){ const start=[1,4,7].includes(yStar)?8:[2,5,8].includes(yStar)?2:5;   // 手引きp.17「月命星の決定」：一四七=八、二五八=二、三六九=五（立春月）
+  return ((start-1-k)%9+9)%9+1; }
+function fmtJST(ms){ const d=new Date(ms+JST); return `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`; }
+function kigaku(b){
+  const o=ymOf(b.date); const hon=starOfYear(o.y), getsu=monthStar(hon,o.k);
+  // 同会（本命=月命）は月命星を切り換えて鑑看（ハンドブックp.17）
+  const SW={1:9,2:6,3:4,4:3,6:2,7:8,8:7,9:1}, sex=document.getElementById('sex').value;
+  const sw = hon!==getsu ? null : (hon===5 ? (sex==='f'?6:sex==='m'?7:null) : SW[hon]);
+  const eff = sw||getsu, needSex = hon===getsu && hon===5 && !sw;
+  const pos=((hon-eff)%9+9)%9;            // 月命星を中宮に置いた盤で、本命星が入る宮
+  // 節入り当日で時刻未入力 → 確定できない旨
+  let edge=null;
+  if(!b.hasT) for(const yy of [b.y-1,b.y]) for(let k=0;k<12;k++){ const ts=setsuMs(yy,k); if(new Date(ts+JST).toISOString().slice(0,10)===`${b.y}-${String(b.m).padStart(2,'0')}-${String(b.d).padStart(2,'0')}`) edge=ts; }
+  let near=null; for(const yy of [b.y-1,b.y,b.y+1]) for(let k=0;k<12;k++){ const ts=setsuMs(yy,k); if(Math.abs(ts-b.date.getTime())<=3600000) near=ts; }
+  return {hon,getsu,eff,sw,needSex,pos,doukai:hon===getsu,edge,near,k:o.k};
+}
+const XY={1:[-1,1],2:[-1,0],3:[1,1],4:[0,-1],5:[0,1],6:[-1,-1],7:[1,0],8:[1,-1]};
+const opposite=i=>+Object.keys(XY).find(k=>XY[k][0]===-XY[i][0]&&XY[k][1]===-XY[i][1]);
+const HOME={1:5,2:6,3:7,4:8,6:1,7:2,8:3,9:4};          // 後天定位（星→位置番号）
+const BR_DIR=[5,3,3,7,8,8,4,6,6,2,1,1];                 // 子丑寅卯辰巳午未申酉戌亥 → 位置番号
+function termMs(lon,y,m,d){          // 太陽黄経lonに達する時刻(ms)。y-m-d付近
+  const f=jd=>((sunLon(jd)-lon+540)%360)-180;
+  let lo=toJD(Date.UTC(y,m-1,d))-12, hi=lo+24;
+  for(let i=0;i<50;i++){ const mid=(lo+hi)/2; if(f(mid)<0) lo=mid; else hi=mid; }
+  return fromJD((lo+hi)/2);
+}
+const dayNum=ms=>{ const d=new Date(ms+JST); return Math.floor(toJD(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),3))+0.5); };
+const dayIdx=n=>((n+49)%60+60)%60;                       // 0=甲子
+function nearestKinoene(n){ let b=n; for(let i=0;i<=30;i++){ if(dayIdx(n+i)===0) return n+i; if(dayIdx(n-i)===0) return n-i; } return b; }
+function dayStar(date){                                    // 日盤中宮の九星（冬至に最も近い甲子=陽遁一白/夏至に最も近い甲子=陰遁九紫）
+  const N=dayNum(date.getTime()), jy=new Date(date.getTime()+JST).getUTCFullYear(); let turn=null;
+  for(const y of [jy-1,jy]){
+    for(const [lon,m,d,yang] of [[270,12,21,true],[90,6,21,false]]){
+      const n=nearestKinoene(dayNum(termMs(lon,y,m,d)));
+      if(n<=N && (!turn||n>turn.n)) turn={n,yang};
+    }
+  }
+  const r=(N-turn.n)%9; return turn.yang? r+1 : 9-r;
+}
+function doyoDir(date){                                    // 土用期間中の土用殺の方位(位置番号)。期間外はnull
+  const lon=sunLon(toJD(date.getTime()));
+  if(lon>=297&&lon<315) return {d:3,n:'丑'};
+  if(lon>=27&&lon<45)   return {d:8,n:'辰'};
+  if(lon>=117&&lon<135) return {d:6,n:'未'};
+  if(lon>=207&&lon<225) return {d:1,n:'戌'};
+  return null;
+}
+const SHOUNI={0:8,6:8,1:9,7:9,2:2,8:2,3:3,9:3,4:5,10:5,5:6,11:6};   // 年の十二支→月盤上の小児殺の九星
+function panel(center,hon,getsu,br,o){
+  o=o||{};
+  const at=i=>((center-1+i)%9)+1, bad={};
+  const mark=(i,why)=>{ if(i>=1&&i<=8) (bad[i]=bad[i]||[]).push(why); };
+  for(let i=1;i<=8;i++){
+    const st=at(i);
+    if(st===5){ mark(i,'五黄殺'); mark(opposite(i),'暗剣殺'); }
+    if(st===hon){ mark(i,'本命殺'); mark(opposite(i),'本命的殺'); }
+    if(st===(o.kill||getsu) && (o.kill||getsu)!==hon){ mark(i,'月命殺'); mark(opposite(i),'月命的殺'); }
+    if(HOME[st]===opposite(i)) mark(i,'定位対冲');
+    if(o.shouni && st===SHOUNI[br.y]) mark(i,'小児殺');
+  }
+  mark(BR_DIR[(br.y+6)%12],'歳破');
+  if(br.m!=null) mark(BR_DIR[(br.m+6)%12],'月破');
+  if(br.d!=null) mark(BR_DIR[(br.d+6)%12],'日破');
+  if(o.doyo) mark(o.doyo.d,'土用殺');
+  const rel=(he,e)=> e===he || GEN[e]===he || GEN[he]===e;   // 比和・生気・退気
+  const best=[],good=[];
+  for(let i=1;i<=8;i++){
+    if(bad[i]) continue;
+    const e=ELEM[at(i)], a=rel(ELEM[hon],e), b=rel(ELEM[getsu],e);
+    if(a&&b) best.push(i); else if(a||b) good.push(i);
+  }
+  return {best,good,bad,center};
+}
+const HOMESTAR=[5,6,7,8,9,1,2,3,4];                       // 位置番号→その宮を定位とする九星
+const rel2=(a,b)=>{ const x=ELEM[a], y=ELEM[b]; return x===y||GEN[x]===y||GEN[y]===x; };
+function bestStars(hon,eff){ const r=[]; for(let s=1;s<=9;s++){ if(s===hon||s===eff||s===5) continue; if(rel2(hon,s)&&rel2(eff,s)) r.push(s); } return r; }   // 一覧表の最大吉方
+function doukaiStar(hon,eff){ return (((2*hon-eff)%9)+9)%9||9; }   // 本命盤で傾斜宮に入る九星（一覧表の「同会」）
+function kigakuNow(hon,getsu,date,age,eff){
+  eff=eff||getsu;
+  const o=ymOf(date), yS=starOfYear(o.y), mS=monthStar(yS,o.k), dS=dayStar(date);
+  const brY=((o.y-4)%12+12)%12, brM=(2+o.k)%12, brD=dayIdx(dayNum(date.getTime()))%12;
+  const doyo=doyoDir(date), shouni=age<=9;
+  const Y=panel(yS,hon,eff,{y:brY},{doyo,kill:getsu}), M=panel(mS,hon,eff,{y:brY,m:brM},{doyo,shouni,kill:getsu}), D=panel(dS,hon,eff,{y:brY,m:brM,d:brD},{doyo,kill:getsu});
+  const okY=new Set([...Y.best,...Y.good]), both=[...M.best,...M.good].filter(i=>okY.has(i));
+  const st=(c)=>a=>a.map(i=>STARS[((c-1+i)%9)+1]);
+  const bothS=both.map(i=>'年盤'+STARS[((yS-1+i)%9)+1]+'・月盤'+STARS[((mS-1+i)%9)+1]);
+  return {Y:{best:st(yS)(Y.best),good:st(yS)(Y.good),c:yS},M:{best:st(mS)(M.best),good:st(mS)(M.good),c:mS},D:{best:st(dS)(D.best),good:st(dS)(D.good),c:dS},both:bothS,month:((2+o.k-1)%12)+1,doyo,shouni};
+}
+
+/* ================= 描画 ================= */
+let STATE = {ov:{n:{},sel:{}}, flags:{tate:false,yoko:false,shibari:false}, yomikudashi:'auto'};
+
+function render(){
+  const parts_ = document.getElementById('full').value.trim().split(/[\s\u3000]+/).filter(Boolean);
+  const seiStr = parts_[0]||'', meiStr = parts_.slice(1).join('');
+  const yp = kata2hira(document.getElementById('yomi').value.trim()).split(/[\s\u3000]+/).filter(Boolean);
+  const yomiSei = yp.length>=2 ? yp[0] : '';
+  const yomi = yp.length>=2 ? yp.slice(1).join('') : (yp[0]||'');
+  const zt = document.getElementById('zoku').value.trim();
+  const zoku = !zt ? '' : /長男|長子|第?一男|^男$/.test(zt) ? 'chou' : /次男|二男/.test(zt) ? 'ji' : 'other';
+  const honmei = document.getElementById('honmei').value;
+  const box = document.getElementById('result');
+  if(!seiStr){ box.innerHTML=''; return; }
+  if(!meiStr){ box.innerHTML='<section class="panel"><p>'+tag('warn','姓と名の間にスペースを入れてください')+' 例：佐藤 太郎</p></section>'; return; }
+  const {sei, mei, all} = compute(seiStr, meiStr, STATE.ov);
+  const missing = all.filter(c=>c.n==null);
+  let h='';
+
+  /* --- 手順1 分析 --- */
+  h+=`<section class="panel"><h2>手順1　辞典で姓名を分析する</h2>
+  <table><thead><tr><th>字</th><th>姓名</th><th>鑑定字</th><th>画数</th><th>五行</th><th>陰陽</th><th>音訓</th><th>名乗り</th><th>辞典</th></tr></thead><tbody>`;
+  for(const c of all){
+    const e=c.entry;
+    let sel='';
+    if(c.list.length>1) sel = `<br><select data-sel="${c.idx}">${c.list.map((x,i)=>`<option value="${i}" ${i===c.sel?'selected':''}>${x.n}画（${esc(x.c)}${x.k?' / '+esc(x.k):''}）p.${x.p}</option>`).join('')}</select>`;
+    h+=`<tr><td class="ch">${esc(c.ch)}</td>
+      <td>${c.part==='sei'?'姓':'名'}</td>
+      <td>${e&&e.k? esc(e.k):'<span class="sub">同じ字</span>'}</td>
+      <td><input class="num" type="number" min="1" max="40" data-n="${c.idx}" value="${c.n??''}">${e&&e.f?'<br>'+tag('warn','要確認'):''}${e?'':'<br>'+tag('bad','辞典に無い')}${sel}</td>
+      <td>${e?tag('none',e.g):'<span class="sub">-</span>'}</td>
+      <td class="yy">${c.n!=null?yyMark(c.n):''}</td>
+      <td>${e?esc(e.y):''}</td><td class="sub">${e?esc(e.a):''}</td>
+      <td class="sub">${e?(e.kana?'ひらがな':`p.${e.p}`):''}</td></tr>`;
+  }
+  h+=`</tbody></table>`;
+  if(missing.length){
+    h+=`<p>${tag('bad','画数が未確定の字があります')} 表の「画数」欄に入力すると、以降の判定が進みます。</p></section>`;
+    box.innerHTML=h; bind(); return;
+  }
+  const seiN = sei.map(c=>c.n), meiN = mei.map(c=>c.n);
+  const P = parts(seiN, meiN); P.seiLen=sei.length; P.meiLen=mei.length; P.tenGyo=(sei[0].entry&&sei[0].entry.g)||'';
+  const ns = all.map(c=>c.n);
+  h+=`<h3>格と部位</h3><table><thead><tr><th>部位</th><th>画数</th><th>算出</th><th>受け持つ時期・領域</th></tr></thead><tbody>
+   ${[
+    ['天格',P.tenkaku,'姓の合計','先祖から受け継ぐ環境。個人の吉凶判断には使いません。'],
+    ['人格',P.jinkaku,'姓の最後の字＋名の最初の字','中年期（数え28〜54歳）。対人接続・親子関係。'],
+    ['地格',P.chikaku,'名の合計','初年期（数え1〜27歳）。内面・本質的な性格。'],
+    ['総格',P.soukaku,'姓名の合計','晩年期（数え55歳以降）。人生の全体像と結末。'],
+    ['天数',P.tensuu,'姓の最初の字','天地・天底の配合に使います。'],
+    ['地数',P.chisuu,'名の最初の字','最重要。人格・地格の双方に影響します。'],
+    ['定数',P.teisuu,'名の最後の字','天底の配合に使います。']
+   ].map(([n,v,how,role])=>`<tr><td><b>${n}</b></td><td>${v}</td><td class="sub">${how}</td><td class="sub">${role}</td></tr>`).join('')}
+  </tbody></table></section>`;
+
+  /* --- 手順2 三大原則 --- */
+  const shape0 = judgeShape(sei, mei, STATE.flags, null);
+  const sound = judgeSound(yomi, mei, yomiSei, meiStr);
+  const grp = items => items.some(i=>i.st==='bad')?'bad':items.some(i=>i.st==='warn')?'warn':items.every(i=>i.st==='none')?'none':'good';
+  const gogyo = judgeGogyo(all, sei.length);
+  const inyou = judgeInyou(seiN, meiN, honmei, STATE.flags);
+  const tenchi0 = judgeTenchi(P, honmei, {yomi:'none', gogyo:gogyo.st, inyou:inyou.st});
+  const meanBase = judgeMeaning(seiStr, meiStr, yomi, zoku, null);
+  const kyoOther0 = [grp(sound),grp(shape0),grp(meanBase),gogyo.st,inyou.st,tenchi0.tenchi.st].includes('bad');
+  const kaku = judgeKaku(P, kyoOther0);
+  const baseBad = kyoOther0 || kaku.st==='bad';
+  const mean = judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad);
+  const shape = judgeShape(sei, mei, STATE.flags, baseBad);
+  const sSt = {音:grp(sound), 形:grp(shape), 意味:grp(mean)};
+  const list = items=>`<ul class="pl">${items.map(i=>`<li>${tag(ST[i.st]?ST[i.st][0]:i.st, ST[i.st]?ST[i.st][1]:i.st)} <b>${esc(i.t)}</b><br><span class="sub">${esc(i.d)}</span></li>`).join('')}</ul>`;
+  h+=`<section class="panel"><h2>手順2　三大原則（音・形・意味）</h2>
+   <div class="row" style="margin-bottom:8px">
+     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-tate" ${STATE.flags.tate?'checked':''}>縦分離名（へんとつくりで左右に割れる字が多い）</label>
+     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-yoko" ${STATE.flags.yoko?'checked':''}>横分離名（かんむり等で上下に割れる字が多い）</label>
+     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-shibari" ${STATE.flags.shibari?'checked':''}>縛り（部首・偏旁の重複）</label>
+   </div>
+   <div class="grid">
+    <div class="card"><div class="hd"><span class="ttl">音（字音）</span>${stTag(sSt.音)}</div>${list(sound)}</div>
+    <div class="card"><div class="hd"><span class="ttl">形（字形）</span>${stTag(sSt.形)}</div>${list(shape)}</div>
+    <div class="card"><div class="hd"><span class="ttl">意味（字義）</span>${stTag(sSt.意味)}</div>${list(mean)}</div>
+   </div></section>`;
+
+  /* --- 手順3 五大真理 --- */
+  const rank = {good:1,warn:0.5,bad:0,none:null};
+  const autoY = Object.values(sSt).includes('bad')?'bad':Object.values(sSt).includes('warn')?'warn':Object.values(sSt).every(v=>v==='none')?'none':'good';
+  const yomiSt = STATE.yomikudashi==='auto' ? autoY : STATE.yomikudashi;
+  const tenchi = judgeTenchi(P, honmei, {yomi:yomiSt, gogyo:gogyo.st, inyou:inyou.st});
+  const truths = [
+    {name:'読み下し', w:30, st:yomiSt},
+    {name:'五行', w:20, st:gogyo.st},
+    {name:'陰陽', w:20, st:inyou.st},
+    {name:'天地・天底の配合', w:20, st:tenchi.st},
+    {name:'画数（格数）', w:10, st:kaku.st},
+  ];
+  const colors={good:'#1f7a4d',warn:'#c98a00',bad:'#b3261e',none:'#8d8a82'};
+  h+=`<section class="panel"><h2>手順3　五大真理による統合評価</h2>
+   <div class="bar">${truths.map(t=>`<div style="width:${t.w}%;background:${colors[t.st]}">${t.name} ${t.w}%</div>`).join('')}</div>
+   <div class="grid">`;
+  // 読み下し
+  const hint = [...sound,...shape,...mean].filter(i=>i.st==='bad').map(i=>i.t);
+  h+=`<div class="card"><div class="hd"><span class="ttl">1　読み下し（30%）</span>${stTag(yomiSt)}</div>
+     ${hint.length?`<p class="sub">手順2で見つかった凶相：${esc(hint.join('、'))}</p>`:''}
+     <select id="yomikudashi"><option value="auto" ${STATE.yomikudashi==='auto'?'selected':''}>手順2から自動</option><option value="none" ${STATE.yomikudashi==='none'?'selected':''}>未判定</option><option value="good" ${STATE.yomikudashi==='good'?'selected':''}>吉</option><option value="warn" ${STATE.yomikudashi==='warn'?'selected':''}>注意</option><option value="bad" ${STATE.yomikudashi==='bad'?'selected':''}>凶</option></select></div>`;
+  // 五行
+  h+=`<div class="card"><div class="hd"><span class="ttl">2　五行（20%）</span>${stTag(gogyo.st)}</div>
+     <p>${esc(gogyo.line)}</p>${list(gogyo.items)}
+     ${gogyo.pairs.map(pr=>{ const d=GOGYO_PAIR[pr.a+pr.b]; if(!d) return ''; const kyo=truths.some(t=>t.st==='bad');
+       return `<details open><summary>${esc(pr.n)}　${pr.a}－${pr.b}</summary>${kyo?`<p><b>凶名の性質</b>：${esc(d[1])}<br><b>体質</b>：${esc(d[2])}</p>`:`<p><b>${d[3]?'準正名':'正名'}の性質</b>：${esc(d[0])}</p>`}</details>`; }).join('')}</div>`;
+  // 陰陽
+  h+=`<div class="card"><div class="hd"><span class="ttl">3　陰陽（20%）</span>${stTag(inyou.st)}</div>
+     <p class="yy">${esc(inyou.std)}</p><p class="sub">${all.map(c=>c.ch+c.n).join('　')}</p>
+     ${inyou.notes.length?`<p class="sub">${esc(inyou.notes.join(' '))}</p>`:''}${list(inyou.items)}</div>`;
+  // 天地天底
+  h+=`<div class="card"><div class="hd"><span class="ttl">4　天地・天底の配合（20%）</span>${stTag(tenchi.st)}</div>
+     <h3>天地の配合　${stTag(tenchi.tenchi.st)}</h3>${list(tenchi.tenchi.items)}
+     <h3>天底の配合　${stTag(tenchi.teitei.st)}</h3>${list(tenchi.teitei.items)}</div>`;
+  // 画数
+  const kyoNow = [yomiSt, gogyo.st, inyou.st, tenchi.st].includes('bad');   // 画数以外の真理に凶があるか
+  const kEff = r => {
+    const b=r.k.base;
+    if(b.sho) return kyoNow ? `<p><b>凶名の作用</b>（画数以外の真理に凶があるため）：${esc(b.kyo)}</p>` : `<p><b>正名の作用</b>（画数以外の真理に凶がないため）：${esc(b.sho)}</p>`;
+    if(kyoNow && GCLS[r.k.g]==='good') return '<p class="sub">画数以外の真理に凶があるため、吉数の作用は十分に発揮されません。</p>';
+    return '';
+  };
+  const kLine = r => `<details open><summary>${r.n}　${r.v}画${r.v!==r.k.n?'（'+r.k.n+'画として）':''}　${r.role}　${tag(GCLS[r.k.g],GLAB[r.k.g])}　<b>${esc(r.k.base.l)}</b></summary><p>${esc(r.k.base.t)}</p>${kEff(r)}${(r.notes||[]).length?`<p class="sub">講義：${esc(r.notes.join(' '))}</p>`:''}</details>`;
+  h+=`<div class="card" style="grid-column:1/-1"><div class="hd"><span class="ttl">5　画数（10%）</span>${stTag(kaku.st)}</div>
+     ${kaku.rows.map(kLine).join('')}
+     <h3>参考（判定には使いません）</h3>
+     ${kaku.refs.map(r=>`<p>${r.n}　${r.v}画　${r.role}　${tag(GCLS[r.k.g],GLAB[r.k.g])}　<b>${esc(r.k.base.l)}</b><br><span class="sub">${esc(r.k.base.t)}</span></p>`).join('')}</div>`;
+  h+=`</div>`;
+  // 統合：凶が1つでも該当すれば凶名、どれも該当しなければ正名
+  const badT = truths.filter(t=>t.st==='bad').map(t=>t.name);
+  const kyomei = badT.length>0;
+  const dark = badT.slice(0,4).length && kaku.strong;
+  h+=`<h3>統合判定</h3>
+   <p style="font-size:20px;margin:6px 0">${tag(kyomei?'bad':'good', kyomei?'凶名':'正名')}</p>
+   ${kyomei?`<p>凶に該当した真理：<b>${esc(badT.join('、'))}</b></p>`:''}
+   ${dark?`<p>${tag('bad','ダークサイド効果')} 強い吉数（${kaku.rows.filter(r=>STRONG_NUMS.includes(r.k.n)).map(r=>r.n+r.v+'画').join('、')}）が、凶の真理により悪の方向へ増幅されます。</p>`:''}
+  </section>`;
+  // 流年（九曜表：画数を9で割った系列。数え年がその系列の数と9年周期で重なる年の前後1年に象意が表面化する）
+  const bd = parseBirth();
+  const birth = bd? bd.y : 0;
+  if(bd){
+    const kg = kigaku(bd), dn = kigakuNow(kg.hon, kg.getsu, new Date(), new Date().getFullYear()-bd.y+1, kg.eff);
+    const L=a=>a.length?a.join('・'):'なし';
+    const card=(t,v,c)=>`<div class="card"><div class="hd"><span class="ttl">${t}</span>${tag(c||'good',v)}</div></div>`;
+    h+=`<section class="panel"><h2>九星</h2>
+      ${kg.near?`<p class="sub">節入りの前後1時間以内です（${fmtJST(kg.near)}頃）。万年暦で確認してください。</p>`:''}
+      ${kg.edge?`<p class="sub">節入り当日（${fmtJST(kg.edge)}頃）です。出生時刻を入れると確定します（時刻未入力は12:00で判定）。</p>`:''}
+      <div class="grid">
+      ${card('本命星',STARS[kg.hon])}${card('月命星',STARS[kg.getsu])}
+      ${kg.sw?card('月命星の切換（同会）',STARS[kg.sw],'warn'):''}${kg.needSex?card('月命星の切換（同会）','性別を選ぶと確定','warn'):''}
+      ${kg.needSex?'':card('傾斜',STARS[HOMESTAR[kg.pos]])}${kg.needSex?'':card('同会',STARS[doukaiStar(kg.hon,kg.eff)])}
+      ${kg.needSex?'':card('最大吉方',bestStars(kg.hon,kg.eff).map(x=>STARS[x]).join('・')||'なし')}
+      ${card('年盤 最大吉方',L(dn.Y.best))}${card('年盤 吉方',L(dn.Y.good))}
+      ${card('月盤 最大吉方（'+dn.month+'月）',L(dn.M.best))}${card('月盤 吉方（'+dn.month+'月）',L(dn.M.good))}
+      ${card('年月ともに吉方',L(dn.both))}
+      ${card('日盤 最大吉方（本日）',L(dn.D.best))}${card('日盤 吉方（本日）',L(dn.D.good))}
+      ${dn.doyo?card('土用殺',STARS[HOMESTAR[dn.doyo.d]],'bad'):''}${dn.shouni?card('小児殺','月盤で適用（数え9歳以下）','warn'):''}
+      </div></section>`;
+  }
+  if(birth>=1850 && birth<=2100){
+    const age = new Date().getFullYear()-birth+1;       // 数え年（生まれた年が1歳）
+    const lineK = kaku.rows.filter(r=>r.n!=='地数').map(r=>{
+      const k=((r.v-1)%9)+1; const ages=[]; for(let a=k;a<=99;a+=9) ages.push(a);
+      const now = ages.find(a=>Math.abs(a-age)<=1);
+      const next = ages.find(a=>a>age+1);
+      const kyoN = truths.some(t=>t.st==='bad');
+      const eff = r.k.base.sho ? (kyoN? r.k.base.kyo : r.k.base.sho) : r.k.base.t;
+      return `<div class="card"><div class="hd"><span class="ttl">${r.n}　${r.v}画（${k}の系列）</span>${tag(GCLS[r.k.g],GLAB[r.k.g])}</div>
+        <p class="sub">回座年（数え）：${ages.map(a=>a===now?`<b>${a}</b>`:a).join('・')}歳</p>
+        <p>${now?`${tag('warn','今がその時期')} 数え${age}歳は、${now}歳の前後1年にあたります。`:(next?`次の回座年は数え${next}歳（あと${next-1-age>0?next-1-age:0}年ほどで、前後1年に入ります）。`:'')}</p>
+        ${now?`<p class="sub">${esc(r.k.base.l)}：${esc(eff)}</p>`:''}</div>`;
+    }).join('');
+    h+=`<section class="panel"><h2>流年（数え${age}歳）</h2><div class="grid">${lineK}</div></section>`;
+  }
+  box.innerHTML=h; bind();
+}
+function bind(){
+  document.querySelectorAll('[data-n]').forEach(el=>el.addEventListener('change',()=>{ STATE.ov.n[el.dataset.n]=el.value; render(); }));
+  document.querySelectorAll('[data-sel]').forEach(el=>el.addEventListener('change',()=>{ STATE.ov.sel[el.dataset.sel]=Number(el.value); delete STATE.ov.n[el.dataset.sel]; render(); }));
+  for(const k of ['tate','yoko','shibari']){ const el=document.getElementById('f-'+k); if(el) el.addEventListener('change',()=>{ STATE.flags[k]=el.checked; render(); }); }
+  const y=document.getElementById('yomikudashi'); if(y) y.addEventListener('change',()=>{ STATE.yomikudashi=y.value; render(); });
+}
+document.getElementById('go').addEventListener('click',()=>{ STATE.ov={n:{},sel:{}}; render(); });
+for(const id of ['full','yomi','zoku']) document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ STATE.ov={n:{},sel:{}}; render(); }});
+for(const id of ['zoku','honmei','sex']) document.getElementById(id).addEventListener('change',render);
+/* ドラムロール式の生年月日選択（入力欄に直接入力もできる） */
+(function(){
+  const inp=document.getElementById('birth'); let box=null, cols={};
+  const H=36, thisY=new Date().getFullYear();
+  const items={y:[],m:[],d:[]};
+  for(let y=thisY;y>=1850;y--) items.y.push(y);
+  for(let m=1;m<=12;m++) items.m.push(m);
+  const unit={y:'年',m:'月',d:'日'};
+  function fillDays(){ const y=cur('y')||2000, m=cur('m')||1, n=new Date(y,m,0).getDate(), keep=cur('d');
+    cols.d.innerHTML=''; for(let d=1;d<=n;d++){ const e=document.createElement('div'); e.textContent=d+'日'; e.dataset.v=d; cols.d.appendChild(e); }
+    if(keep) setCol('d',Math.min(keep,n),false); }
+  function cur(k){ const c=cols[k]; const i=Math.round(c.scrollTop/H); const e=c.children[Math.min(Math.max(i,0),c.children.length-1)]; return e?+e.dataset.v:0; }
+  let mute=0;
+  function setCol(k,v,smooth){ if(!smooth) mute=Date.now()+400; const c=cols[k]; const i=[...c.children].findIndex(e=>+e.dataset.v===v); if(i>=0) c.scrollTo({top:i*H,behavior:smooth?'smooth':'auto'}); }
+  function write(){ const y=cur('y'), m=cur('m'), d=cur('d'); if(!(y&&m&&d)) return;
+    inp.value=`${y}/${m}/${d}`; inp.dispatchEvent(new Event('change')); }
+  function build(){
+    box=document.createElement('div'); box.className='drum hidden';
+    box.innerHTML='<div class="cols"><div class="col" data-k="y"></div><div class="col" data-k="m"></div><div class="col" data-k="d"></div><div class="band"></div></div><div class="ft"><button type="button" class="small" id="drum-clear">消去</button><button type="button" class="small" id="drum-ok">決定</button></div>';
+    document.body.appendChild(box);
+    for(const k of ['y','m','d']){ cols[k]=box.querySelector(`[data-k="${k}"]`); }
+    for(const k of ['y','m']) for(const v of items[k]){ const e=document.createElement('div'); e.textContent=v+unit[k]; e.dataset.v=v; cols[k].appendChild(e); }
+    fillDays();
+    let tm=null;
+    for(const k of ['y','m','d']){
+      cols[k].addEventListener('scroll',()=>{ clearTimeout(tm); tm=setTimeout(()=>{ if(Date.now()<mute) return; if(k!=='d') fillDays(); write(); },120); });
+      cols[k].addEventListener('click',e=>{ if(e.target.dataset.v){ setCol(k,+e.target.dataset.v,true); } });
+    }
+    box.querySelector('#drum-ok').addEventListener('click',close);
+    box.querySelector('#drum-clear').addEventListener('click',()=>{ inp.value=''; inp.dispatchEvent(new Event('change')); render(); close(); });
+  }
+  function place(){ const r=inp.getBoundingClientRect(); box.style.left=Math.max(8,Math.min(r.left,innerWidth-box.offsetWidth-8))+'px';
+    const below=r.bottom+6, h=box.offsetHeight; box.style.top=(below+h>innerHeight? Math.max(8,r.top-h-6): below)+'px'; }
+  function open(){ if(!box) build(); const p=parseDateText(inp.value)||{y:1985,m:1,d:1};
+    box.classList.remove('hidden'); place();
+    setCol('y',p.y,false); setCol('m',p.m,false); fillDays(); setCol('d',p.d,false); }
+  function close(){ if(box) box.classList.add('hidden'); }
+  inp.addEventListener('focus',open); inp.addEventListener('click',open);
+  inp.addEventListener('input',()=>{ const p=parseDateText(inp.value); if(p&&box&&!box.classList.contains('hidden')){ setCol('y',p.y,false); setCol('m',p.m,false); fillDays(); setCol('d',p.d,false); } });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key==='Escape') close(); });
+  document.addEventListener('mousedown',e=>{ if(box&&!box.classList.contains('hidden')&&!box.contains(e.target)&&e.target!==inp) close(); });
+  window.addEventListener('resize',()=>{ if(box&&!box.classList.contains('hidden')) place(); });
+})();
+for(const id of ['birth','birthT']) document.getElementById(id).addEventListener('change',()=>{ const b=parseBirth(); if(b) document.getElementById('honmei').value=STARS[kigaku(b).hon]; render(); });
+
+/* ================= 字典検索 ================= */
+let qLimit=100;
+function search(){
+  const q = document.getElementById('q').value.trim();
+  const qn = document.getElementById('qn').value;
+  const qg = document.getElementById('qg').value;
+  const qh = kata2hira(q);
+  let res = DICT.filter(e=>{
+    if(qn && e.n!==Number(qn)) return false;
+    if(qg && e.g!==qg) return false;
+    if(!q) return true;
+    if([...q].some(ch=>/[㐀-鿿豈-﫿]/.test(ch))) return [...q].every(ch=>e.c===ch||e.k===ch) || e.c.includes(q) || e.k.includes(q);
+    const toks = readingsOf(e);
+    return toks.some(t=>t.includes(qh)) || kata2hira(e.y).includes(qh);
+  });
+  const total=res.length; res=res.slice(0,qLimit);
+  document.getElementById('qinfo').textContent = `${total}件が見つかりました（全${DICT.length}件）。` + (total>qLimit?` 先頭の${qLimit}件を表示しています。`:'');
+  document.getElementById('qres').innerHTML = `<table><thead><tr><th>字</th><th>鑑定字</th><th>鑑定数</th><th>五行</th><th>音訓</th><th>名乗り</th><th>辞典</th></tr></thead><tbody>`+
+   res.map(e=>`<tr><td class="ch">${esc(e.c)}</td><td class="ch">${esc(e.k)}</td><td>${e.n}</td><td>${tag('none',e.g)}</td><td>${esc(e.y)}</td><td class="sub">${esc(e.a)}</td><td class="sub">p.${e.p}${e.f?' '+tag('warn','要確認'):''}</td></tr>`).join('')+`</tbody></table>`+
+   (total>qLimit?`<p><button class="small" id="more">さらに100件表示</button></p>`:'');
+  const m=document.getElementById('more'); if(m) m.addEventListener('click',()=>{ qLimit+=100; search(); });
+}
+for(const id of ['q','qn','qg']) document.getElementById(id).addEventListener('input',()=>{ qLimit=100; search(); });
+
+/* ================= 画数の深義 ================= */
+function kakuList(){
+  const n=document.getElementById('kn').value, g=document.getElementById('kg').value;
+  const rows=KAKUSU.filter(k=>(!n||k.n===Number(n))&&(!g||k.g===g));
+  document.getElementById('kres').innerHTML=`<table><thead><tr><th>画数</th><th>総論</th><th>区分</th><th>人生の概観</th></tr></thead><tbody>`+
+  rows.map(k=>`<tr><td><b>${k.n}</b></td><td>${esc(k.l)}</td><td>${tag(GCLS[k.g],GLAB[k.g])}<br><span class="sub">${k.ex?'本文':'判断'}</span></td><td>${esc(k.t)}${k.sho?`<br><span class="sub">正名：${esc(k.sho)}<br>凶名：${esc(k.kyo)}</span>`:''}</td></tr>`).join('')+`</tbody></table>`;
+}
+for(const id of ['kn','kg']) document.getElementById(id).addEventListener('input',kakuList);
+
+/* ================= 設定 ================= */
+/* ================= テーマ ================= */
+function applyTheme(m){
+  const r=document.documentElement;
+  if(m==='light'||m==='dark') r.setAttribute('data-theme',m); else r.removeAttribute('data-theme');
+  document.querySelectorAll('#theme button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+}
+let THEME = LS.get('theme','auto');
+applyTheme(THEME);
+document.querySelectorAll('#theme button').forEach(b=>b.addEventListener('click',()=>{ THEME=b.dataset.m; LS.set('theme',THEME); applyTheme(THEME); }));
+
+/* ================= タブ ================= */
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  for(const t of ['kantei','search','kaku']) document.getElementById('t-'+t).classList.toggle('hidden', t!==b.dataset.t);
+  if(b.dataset.t==='search') search();
+  if(b.dataset.t==='kaku') kakuList();
+}));
+</script>
+</body>
+</html>
