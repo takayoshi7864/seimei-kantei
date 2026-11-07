@@ -404,10 +404,16 @@ function lookupChars(str){
     let list = BYCHAR.get(key)||[];
     if(!list.length && /[ぁ-ゖァ-ヺーｰ―—－]/.test(key)){ const e=kanaEntry(key); if(e){ e.y = ''; list=[e]; } }
     if(!list.length && /[A-Za-zＡ-Ｚａ-ｚ]/.test(key)){ const e=alphaEntry(key); if(e) list=[e]; }
+    if(!list.length && /[0-9０-９]/.test(key)){            // アラビア数字は漢数字に直して数える（0は1画・五行は火）
+      const d=Number(key.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)));
+      if(d===0) list=[{c:ch, k:'', n:1, g:'火', m:'', y:'', a:'', p:0, f:0, kana:1, alpha:'0'}];
+      else { const base=(BYCHAR.get('零一二三四五六七八九'[d])||[])[0]; if(base) list=[Object.assign({},base,{c:ch})]; }
+    }
     return {ch, list, sel:0};
   });
 }
 function readingsOf(entry){
+  if(entry.alpha==='0') return ['れい','ぜろ'];
   if(entry.alpha) return [ALPHA_YOMI[entry.alpha]];
   if(entry.kana) return [kata2hira(entry.c)];
   // 音読み（ひらがな）／訓読み／名乗り
@@ -907,7 +913,7 @@ function render(){
       <td>${e?tag('none',e.g):'<span class="sub">-</span>'}</td>
       <td class="yy">${c.n!=null?yyMark(c.n):''}</td>
       <td>${e?esc(e.y):''}</td><td class="sub">${e?esc(e.a):''}</td>
-      <td class="sub">${e?(e.alpha?'英字':e.kana?'仮名':`p.${e.p}`):''}</td></tr>`;
+      <td class="sub">${e?(e.alpha?(e.alpha==='0'?'数字':'英字'):e.kana?'仮名':`p.${e.p}`):''}</td></tr>`;
   }
   h+=`</tbody></table>`;
   if(missing.length){
