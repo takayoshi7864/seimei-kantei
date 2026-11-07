@@ -679,6 +679,15 @@ const ELEM=['','水','土','木','木','土','金','金','土','火'];
 const KYU=['中宮','乾（西北）','兌（西）','艮（東北）','離（南）','坎（北）','坤（南西）','震（東）','巽（南東）'];
 const GEN={'木':'火','火':'土','土':'金','金':'水','水':'木'};   // 相生
 const JST=9*3600000;
+/* 生年月日欄：全角の数字・区切りを、入力と同時に半角にそろえる */
+(function(){
+  const inp=document.getElementById('birth');
+  const half=v=>v.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).replace(/[／]/g,'/').replace(/[－ー−‐]/g,'-').replace(/[．。]/g,'.');
+  const fix=()=>{ const v=inp.value, h=half(v); if(h!==v){ const p=inp.selectionStart; inp.value=h; try{ inp.setSelectionRange(p,p); }catch(e){} } };
+  inp.addEventListener('input',e=>{ if(!e.isComposing) fix(); });
+  inp.addEventListener('compositionend',fix);
+  inp.addEventListener('blur',fix);
+})();
 function parseDateText(v){
   v=(v||'').trim().replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248));
   let m=v.match(/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})\D*$/)||v.match(/^(\d{4})(\d{2})(\d{2})$/);
