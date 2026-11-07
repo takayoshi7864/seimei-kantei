@@ -1094,11 +1094,46 @@ if(/[?&]debug=1/.test(location.search)){
 (function(){
   const full=document.getElementById('full'), yomi=document.getElementById('yomi');
   const isKana=t=>/^[ぁ-ゖァ-ヺー]+$/.test(t);
-  full.addEventListener('compositionstart',()=>{ AUTOKANA.last=''; });
+  // ライブ変換で、変換前のかなが画面から消える場合に備え、打ったキー（ローマ字）からも読みを作る
+  const R2K=(()=>{ const t={}; const add=(k,v)=>{ t[k]=v; };
+    const V={a:'あ',i:'い',u:'う',e:'え',o:'お'};
+    for(const k in V) add(k,V[k]);
+    const rows={k:'かきくけこ',s:'さしすせそ',t:'たちつてと',n:'なにぬねの',h:'はひふへほ',m:'まみむめも',y:'や*ゆ*よ',r:'らりるれろ',w:'わゐ*ゑを',g:'がぎぐげご',z:'ざじずぜぞ',d:'だぢづでど',b:'ばびぶべぼ',p:'ぱぴぷぺぽ'};
+    for(const c in rows){ [...rows[c]].forEach((k,i)=>{ if(k!=='*') add(c+'aiueo'[i],k); }); }
+    const small={ya:'ゃ',yu:'ゅ',yo:'ょ'}, yo={ya:'や',yu:'ゆ',yo:'よ'};
+    for(const c of 'kgsztdnhbpmr'){ const base=t[c+'i']; for(const y in small) add(c+y,base+small[y]); }
+    for(const [k,v] of Object.entries({shi:'し',sha:'しゃ',shu:'しゅ',sho:'しょ',she:'しぇ',chi:'ち',cha:'ちゃ',chu:'ちゅ',cho:'ちょ',che:'ちぇ',tsu:'つ',fu:'ふ',fa:'ふぁ',fi:'ふぃ',fe:'ふぇ',fo:'ふぉ',ji:'じ',ja:'じゃ',ju:'じゅ',jo:'じょ',je:'じぇ',jya:'じゃ',jyu:'じゅ',jyo:'じょ',zya:'じゃ',dya:'ぢゃ',tya:'ちゃ',tyu:'ちゅ',tyo:'ちょ',cya:'ちゃ',cyu:'ちゅ',cyo:'ちょ',thi:'てぃ',dhi:'でぃ',tha:'てゃ',thu:'てゅ',dhu:'でゅ',wi:'うぃ',we:'うぇ',wo:'を',va:'ゔぁ',vi:'ゔぃ',vu:'ゔ',ve:'ゔぇ',vo:'ゔぉ',qa:'くぁ',nn:'ん',xa:'ぁ',xi:'ぃ',xu:'ぅ',xe:'ぇ',xo:'ぉ',la:'ぁ',li:'ぃ',lu:'ぅ',le:'ぇ',lo:'ぉ',xya:'ゃ',xyu:'ゅ',xyo:'ょ',lya:'ゃ',lyu:'ゅ',lyo:'ょ',xtu:'っ',ltu:'っ',xtsu:'っ',ltsu:'っ'})) add(k,v);
+    add('-','ー'); add(',','、'); add('.','。');
+    return t; })();
+  const romajiToKana=r=>{
+    let out='', i=0;
+    while(i<r.length){
+      let hit=null;
+      for(let L=4;L>=1&&!hit;L--){ const seg=r.substr(i,L); if(seg.length===L && R2K[seg]){ hit=[seg,R2K[seg]]; } }
+      if(hit){ out+=hit[1]; i+=hit[0].length; continue; }
+      const c=r[i], n=r[i+1];
+      if(c==='n' && (n===undefined || !/[aiueoy]/.test(n))){ out+='ん'; i++; continue; }          // 「n」＋子音、語末の「n」は「ん」
+      if(n && c===n && /[kstpgzdbcfhjmrwy]/.test(c)){ out+='っ'; i++; continue; }                  // 子音の重なりは「っ」
+      out+=c; i++;                                                                                    // 変換できない文字はそのまま
+    }
+    return out; };
+  let romaji='';
+  full.addEventListener('keydown',e=>{
+    if(!(e.isComposing||e.keyCode===229)||e.ctrlKey||e.metaKey||e.altKey) return;
+    const m=/^Key([A-Z])$/.exec(e.code||'');
+    if(m) romaji+=m[1].toLowerCase();
+    else if(e.code==='Minus') romaji+='-';
+    else if(e.code==='Backspace') romaji=romaji.slice(0,-1);
+  });
+  full.addEventListener('compositionstart',()=>{ AUTOKANA.last=''; romaji=''; });
   full.addEventListener('compositionupdate',e=>{ if(isKana(e.data||'')) AUTOKANA.last=e.data; });
   full.addEventListener('compositionend',e=>{
-    const t=e.data||''; if(t && AUTOKANA.last && t!==AUTOKANA.last) AUTOKANA.pairs[t]=AUTOKANA.last;
-    AUTOKANA.last=''; fill();
+    const t=e.data||''; let rd=AUTOKANA.last;
+    const derived=romajiToKana(romaji), h=x=>x.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+    // ローマ字から作った読みが、画面で見えたかなと矛盾しなければ、そちら（欠けが無い方）を使う
+    if(derived && isKana(derived) && (!rd || h(derived).startsWith(h(rd)))) rd = (rd && /^[ァ-ヺー]/.test(rd)) ? derived.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)) : derived;
+    if(t && rd && t!==rd) AUTOKANA.pairs[t]=rd;
+    AUTOKANA.last=''; romaji=''; fill();
   });
   full.addEventListener('input',e=>{ if(!e.isComposing) fill(); });
   yomi.addEventListener('input',()=>{ AUTOKANA.manual = yomi.value.trim()!==''; });
