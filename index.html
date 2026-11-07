@@ -1079,6 +1079,18 @@ function labelTables(root){
 for(const id of ['result','qres','kres']){ const el=document.getElementById(id); if(el) new MutationObserver(()=>labelTables(el)).observe(el,{childList:true}); }
 /* 読みの自動入力：漢字を日本語入力（IME）で打つとき、変換前のかな（読み）を覚えて、読みの欄に入れる */
 const AUTOKANA = {pairs:{}, last:'', manual:false};
+/* 調査用：URLの末尾に ?debug=1 を付けると、日本語入力のイベントの記録を画面の下に出す */
+if(/[?&]debug=1/.test(location.search)){
+  const pre=document.createElement('pre');
+  pre.style.cssText='position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;margin:0;padding:8px;background:#000;color:#0f0;font:11px/1.4 monospace;z-index:99;white-space:pre-wrap';
+  document.body.appendChild(pre);
+  const log=m=>{ pre.textContent+=m+'\n'; pre.scrollTop=pre.scrollHeight; };
+  log('UA: '+navigator.userAgent);
+  const f=document.getElementById('full');
+  for(const t of ['compositionstart','compositionupdate','compositionend','beforeinput','input'])
+    f.addEventListener(t,e=>log(t+' data=「'+(e.data===null?'null':e.data)+'」 composing='+e.isComposing+(e.inputType?' type='+e.inputType:'')+' value=「'+f.value+'」 last=「'+AUTOKANA.last+'」 読み欄=「'+document.getElementById('yomi').value+'」'),true);
+}
+
 (function(){
   const full=document.getElementById('full'), yomi=document.getElementById('yomi');
   const isKana=t=>/^[ぁ-ゖァ-ヺー]+$/.test(t);
