@@ -1323,7 +1323,7 @@ if(/[?&]debug=1/.test(location.search)){
     if(!v){ AUTOKANA.manual=false; if(!AUTOKANA.manual) yomi.value=''; return; }
     if(AUTOKANA.manual) return;
     const toks=v.split(/[\s　]+/).filter(Boolean), out=[];
-    for(const t of toks){ const r=tokenReading(t); if(r===null){ yomi.value=''; return; } out.push(r); }   // 消した・貼り替えたなどで、読みを組み立てられない漢字があれば、古い読みは消す
+    for(const t of toks){ const r=tokenReading(t); if(r===null) return; out.push(r); }   // 一部の漢字を消した・貼り替えたなどで、読みを組み立てられないときは、読みの欄を触らない（全部消えるのは、姓名の欄が空のときだけ）
     yomi.value=toHira(out.join(' '));
   }
   AUTOKANA.reset=()=>{ AUTOKANA.pairs={}; AUTOKANA.last=''; AUTOKANA.manual=false; };
