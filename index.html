@@ -486,7 +486,16 @@ function parts(seiN, meiN){
 }
 
 /* ================= 判定 ================= */
-function judgeShape(sei, mei, flags, baseBad){
+const SHIBARI_THEME={'里':['実家・家系・親戚の問題','実家や家系の力を、前向きな支えにできる'],'貝':['お金・経済の問題','お金や経済の面で、堅実に成果を積み重ねやすい'],'宀':['家・親・目上からの押さえつけ','家や目上との結びつきを、安定した土台にできる'],'人':['人間関係（身内・同僚・他人）の問題','人との結びつきが強まり、良い縁を繰り返し得やすい'],'口':['発言・言葉にまつわる苦労','良い言葉や教えを、繰り返し人に伝える力になる']};
+function shibariDetail(rs,baseBad){
+  if(!rs||!rs.length) return '';
+  return rs.map(r=>{
+    const th=SHIBARI_THEME[r.comp]; const where=r.kind==='本字'?`本字「${r.comp}」の重複（${r.chars.join('・')}）`:`${r.kind}「${r.comp}」の重複（${r.chars.join('・')}）`;
+    const w=r.kind==='偏'?'偏の重複は、影響が比較的軽め':r.kind==='つくり'?'つくりの重複は、影響が強め':r.kind==='本字'?'同じ字の重複は、最も強く出る':'';
+    return baseBad ? `${where}：${w}${w?'。':''}${th?th[0]+'に縛られやすい。':''}` : `${where}：${w?w+'。':''}正名のため吉に転じ、${th?th[1]:'良いことを繰り返し行う力になる'}。`;
+  }).join('　');
+}
+function judgeShape(sei, mei, flags, baseBad, repeats){
   const items = [];
   const L = (cls,t,d)=>items.push({st:cls,t,d});
   if(mei.length===1 && sei.length>=2) L('bad','一字名前（頭重足軽）','足元が不安定。若年期に急浮上しても後半で失速しやすい。');
@@ -495,8 +504,9 @@ function judgeShape(sei, mei, flags, baseBad){
   if(flags.tate) L('bad','縦分離名（へんとつくりで左右に割れる）','人生の中断・挫折、組織の分裂、身体の切断を暗示。');
   if(flags.yoko) L('bad','横分離名（かんむり等で上下に割れる）','精神面の不調、頭部と胴体の切断を暗示。（安・正のように、上部または下部だけでは漢字として成り立たないものは、横分離としません）');
   if(flags.shibari && baseBad!==null && baseBad!==undefined){
-    if(baseBad) L('bad','縛り（部首・偏旁の重複）','凶名のため、実家・肩書き・お金・人間関係の問題に縛られ、自由に動けなくなる縛りの作用が出ます。（偏の重複は軽く、作りの重複はより強く出ます）');
-    else L('good','縛り（部首・偏旁の重複）','正名のため、重複は吉に転じます（口の重複は良い言葉を発する力、人偏の重複は人との結びつきの強化など。良いことを繰り返し行います）。');
+    const sd=shibariDetail(repeats,baseBad);
+    if(baseBad) L('bad','縛り（部首・偏旁の重複）','凶名のため、実家・肩書き・お金・人間関係の問題に縛られ、自由に動けなくなる縛りの作用が出ます。（偏の重複は軽く、作りの重複はより強く出ます）'+(sd?' 見つかった重複：'+sd:''));
+    else L('good','縛り（部首・偏旁の重複）','正名のため、重複は吉に転じます（口の重複は良い言葉を発する力、人偏の重複は人との結びつきの強化など。良いことを繰り返し行います）。'+(sd?' 見つかった重複：'+sd:''));
   }
   if(!flags.tate && !flags.yoko && !flags.shibari) L('none','縦分離・横分離・縛り','自動判定できません。字形を見て、上のチェックで指定してください。');
   return items;
@@ -969,11 +979,13 @@ function render(){
         if(q&&q[0]===type){ const k=q[idx]; (by[k]=by[k]||{s:0,i:new Set()}).s++; by[k].i.add(i); }
         (by[ch]=by[ch]||{s:0,i:new Set()}).i.add(i); });
       for(const comp in by){ const g=by[comp]; if(g.s>=1 && g.i.size>=2) repeats.push({kind,comp,chars:[...g.i].sort((x,y)=>x-y).map(i=>cs[i])}); } } }
+  { const cs2=[...(seiStr+meiStr)].filter(c=>c!=='々'), seen2={}; cs2.forEach(c=>{ seen2[c]=(seen2[c]||0)+1; });
+    for(const c in seen2) if(seen2[c]>=2 && PART[c]) repeats.push({kind:'本字',comp:c,chars:Array(seen2[c]).fill(c)}); }
   const autoShibari=repeats.length>0;
   const autoKey=seiStr+' '+meiStr;
   if(STATE.autoKey!==autoKey){ STATE.flags.tate=allV; STATE.flags.yoko=allH; STATE.flags.shibari=autoShibari; STATE.autoKey=autoKey; }
   const seiAllV=strc.slice(0,[...seiStr].length).every(c=>c.v);
-  const shape = judgeShape(sei, mei, STATE.flags, baseBad);
+  const shape = judgeShape(sei, mei, STATE.flags, baseBad, repeats);
   const sSt = {音:grp(sound), 形:grp(shape), 意味:grp(mean)};
   const list = items=>`<ul class="pl">${items.map(i=>`<li>${tag(ST[i.st]?ST[i.st][0]:i.st, ST[i.st]?ST[i.st][1]:i.st)} <b>${esc(i.t)}</b><br><span class="sub">${esc(i.d)}</span></li>`).join('')}</ul>`;
   h+=`<section class="panel"><h2>手順2　三大原則（音・形・意味）</h2>
