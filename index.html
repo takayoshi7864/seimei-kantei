@@ -687,6 +687,7 @@ function judgeKaku(P, kyoOther){
       if(n==='総格'){ g = g==='大凶'?'大凶':'凶'; notes.push('総画はNG。'); }
       else { g = kyoOther ? '凶' : '中'; notes.push('五大真理が整っていればOK（総画はNG）。'); }
     }
+    if(nn===10){ g = kyoOther ? '凶' : '中'; notes.push('孤独0数。五大真理が整っていれば問題なく使え、崩れていると、徒労・功を他人に奪われる・虚無感といった凶作用が出る（10画だけで凶名にはしない）。'); }
     if(nn===32) notes.push('選名ならOK。気品のある高貴な名前なら可。命名でつけると体が弱くなりやすい。');
     else if([30,40,42,43,50,52,53].includes(nn)) notes.push('選名ならOK（命名では避ける）。');
     if(n==='総格' && [26,35].includes(nn)) notes.push('総画26・35は芸名なら◎。私生活の問題が重い。');
