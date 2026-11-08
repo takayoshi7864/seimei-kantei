@@ -46,8 +46,22 @@ h2{font-size:16px;margin:0 0 10px;color:var(--accent)}
 h3{font-size:14px;margin:14px 0 6px}
 .row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
 label{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:3px}
-input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;box-sizing:border-box}
 input:not([type=checkbox]),select{height:40px;font-size:16px}
+input[type="time"]{
+  -webkit-appearance:none;
+  appearance:none;
+  height:40px;
+  min-height:40px;
+  line-height:normal;
+  box-sizing:border-box;
+}
+input[type="time"]::-webkit-date-and-time-value{
+  margin:0;
+  padding:0;
+  min-height:1.2em;
+  text-align:left;
+}
 input.kanji{width:12em}
 input.num{width:5em}
 button.primary{background:var(--accent);color:#fff;border:0;border-radius:6px;height:40px;padding:0 22px;font:inherit;font-size:16px;cursor:pointer}
@@ -94,7 +108,8 @@ ul.pl{margin:4px 0;padding-left:1.2em}
 @media(max-width:700px){.bar .bn{display:none}}
 .yy{font-size:20px;letter-spacing:.2em}
 .hidden{display:none}
-.err{display:block;color:var(--bad);font-size:13px;line-height:20px;height:20px;margin-top:2px;white-space:nowrap}
+.err{display:block;color:var(--bad);font-size:13px;line-height:20px;margin-top:2px;white-space:nowrap}
+.err:empty{display:none;height:0;margin:0}
 .row.top{align-items:flex-start;padding-bottom:22px}   /* 2行目の下にも、1行目のエラー行と同じだけの余白を空けておく */
 .row.top .actions{margin-top:20px}
 .row.top #full, .row.top #yomi{width:13em}
@@ -108,20 +123,30 @@ summary{cursor:pointer;color:var(--accent)}
 pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
 .mono{font-family:ui-monospace,Menlo,monospace}
 @media (max-width:640px){
-  main{padding:10px}
+  header{padding:12px 14px 0}
+  nav{padding:0 14px}
+  main{padding:12px 14px}
+  section.panel{padding:14px 12px}
   input.kanji{width:100%}
   .row.top{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
     gap:12px 10px;
-    padding-bottom:8px;
+    padding-bottom:4px;
+    width:100%;
+    box-sizing:border-box;
   }
   .row.top>label{
     width:100%;
+    min-width:0;
   }
   .row.top>label input,
   .row.top>label select{
     width:100% !important;
+    max-width:100%;
+    min-width:0;
+    height:40px;
+    box-sizing:border-box;
   }
   .row.top>.col-full{
     grid-column:1 / -1;
@@ -138,6 +163,34 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
     height:44px;
     padding:0 12px;
     white-space:nowrap;
+  }
+
+  /* 字典検索・画数の深義の入力枠もスマホで綺麗に揃える */
+  #t-search .row,
+  #t-kaku .row{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px 10px;
+    width:100%;
+    box-sizing:border-box;
+  }
+  #t-search .row>label:first-child{
+    grid-column:1 / -1;
+  }
+  #t-search .row>label,
+  #t-kaku .row>label{
+    width:100%;
+    min-width:0;
+  }
+  #t-search .row>label input,
+  #t-search .row>label select,
+  #t-kaku .row>label input,
+  #t-kaku .row>label select{
+    width:100% !important;
+    max-width:100%;
+    min-width:0;
+    height:40px;
+    box-sizing:border-box;
   }
 }
 </style>
