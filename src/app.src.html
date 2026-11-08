@@ -508,7 +508,7 @@ function judgeShape(sei, mei, flags, baseBad, repeats){
     if(baseBad) L('bad','縛り（部首・偏旁の重複）','凶名のため、実家・肩書き・お金・人間関係の問題に縛られ、自由に動けなくなる縛りの作用が出ます。（偏の重複は軽く、作りの重複はより強く出ます）'+(sd?' 見つかった重複：'+sd:''));
     else L('good','縛り（部首・偏旁の重複）','正名のため、重複は吉に転じます（口の重複は良い言葉を発する力、人偏の重複は人との結びつきの強化など。良いことを繰り返し行います）。'+(sd?' 見つかった重複：'+sd:''));
   }
-  if(!flags.tate && !flags.yoko && !flags.shibari) L('none','縦分離・横分離・縛り','自動判定できません。字形を見て、上のチェックで指定してください。');
+  if(!flags.tate && !flags.yoko && !flags.shibari) L('good','縦分離・横分離・縛り','縦分離名・横分離名・縛りのいずれにも当たりません（字ごとの構造は、下の「字形の自動判定」で確認できます）。');
   return items;
 }
 function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, sex){
@@ -995,11 +995,17 @@ function render(){
      <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-yoko" ${STATE.flags.yoko?'checked':''}>横分離名（かんむり等で上下に割れる字が多い）</label>
      <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-shibari" ${STATE.flags.shibari?'checked':''}>縛り（部首・偏旁の重複）</label>
    </div>
-   <p class="sub" style="margin:0 0 10px">字の構造（辞書データからの自動判定）：${strc.map(c=>esc(c.ch)+'＝'+c.label).join('　')}。${allV?'全ての字が左右に割れるため、縦分離名の候補です（違う場合は、チェックを外してください）。':allH?'全ての字が上下に割れるため、横分離名の候補です（違う場合は、チェックを外してください）。':'全ての字が同じ向きに割れているわけではないため、縦分離名・横分離名の候補には当たりません。'}${(!allV&&seiAllV)?'姓の字が全て左右に割れています。名には、割れない字を選ぶのが原則です。':''}<br>部首・偏旁の重複（縛りの候補）：${repeats.length?repeats.map(r=>esc(r.kind+'「'+r.comp+'」（'+r.chars.join('・')+'）')).join('　')+'。同じ部分が重なっています（違う場合は、チェックを外してください）。':'偏・つくり・冠の重複は見つかりません。'}</p>
    <div class="grid">
     <div class="card"><div class="hd"><span class="ttl">音（字音）</span>${stTag(sSt.音)}</div>${list(sound)}</div>
     <div class="card"><div class="hd"><span class="ttl">形（字形）</span>${stTag(sSt.形)}</div>${list(shape)}</div>
     <div class="card"><div class="hd"><span class="ttl">意味（字義）</span>${stTag(sSt.意味)}</div>${list(mean)}</div>
+    <div class="card" style="grid-column:1/-1"><div class="hd"><span class="ttl">字形の自動判定（辞書データの字の構造から）</span></div>
+     <p style="display:flex;flex-wrap:wrap;gap:6px 10px;margin:4px 0 10px">${strc.map(c=>`<span style="border:1px solid var(--line);border-radius:6px;padding:2px 10px"><b style="font-size:18px">${esc(c.ch)}</b> <span class="sub">${c.label}</span></span>`).join('')}</p>
+     <ul class="pl">
+      <li>${tag(allV?'warn':'none',allV?'候補あり':'なし')} <b>縦分離名</b><br><span class="sub">${allV?'全ての字が左右に割れるため、縦分離名の候補です（チェックを自動で入れました。違う場合は外してください）。':'全ての字が左右に割れているわけではありません。'}${(!allV&&seiAllV)?'姓の字が全て左右に割れています。名には、割れない字を選ぶのが原則です。':''}</span></li>
+      <li>${tag(allH?'warn':'none',allH?'候補あり':'なし')} <b>横分離名</b><br><span class="sub">${allH?'全ての字が上下に割れるため、横分離名の候補です（チェックを自動で入れました。違う場合は外してください）。':'全ての字が上下に割れているわけではありません。'}</span></li>
+      <li>${tag(repeats.length?'warn':'none',repeats.length?'候補あり':'なし')} <b>縛り（部首・偏旁の重複）</b><br><span class="sub">${repeats.length?repeats.map(r=>esc(r.kind+'「'+r.comp+'」（'+r.chars.join('・')+'）')).join('　')+'。同じ部分が重なっています（チェックを自動で入れました。違う場合は外してください）。':'偏・つくり・冠の重複は見つかりません。'}</span></li>
+     </ul></div>
    </div></section>`;
 
   /* --- 手順3 五大真理 --- */
