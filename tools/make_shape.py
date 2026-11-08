@@ -54,11 +54,28 @@ def H(n,d=0):
         return False
     t=tree(n)
     return H(t,d+1) if t!=n else False
+NORM={'亻':'人','氵':'水','扌':'手','忄':'心','礻':'示','⺼':'月','𧾷':'足','⻌':'辶','⻏':'阝','⻖':'阝','衤':'衣','⺾':'艹','⺿':'艹','灬':'火','⺌':'小','罒':'网','犭':'犬','饣':'食'}
+def comp(n):
+    if isinstance(n,tuple): return None
+    return NORM.get(n,n)
+def parts(ch):
+    t=tree(ch)
+    if not isinstance(t,tuple): return None
+    op,kids=t
+    if op in '⿰⿲': a,b=comp(kids[0]),comp(kids[-1]); return ('h',a,b) if a and b else None
+    if op in '⿱⿳': a,b=comp(kids[0]),comp(kids[-1]); return ('v',a,b) if a and b else None
+    return None
 dic=json.load(open(os.path.join(root,'data','dict.json'),encoding='utf-8'))
 chars=sorted({e['c'] for e in dic}|{e['k'] for e in dic if e.get('k')})
 v=''.join(c for c in chars if len(c)==1 and V(tree(c)))
 h=''.join(c for c in chars if len(c)==1 and H(tree(c)) and c not in '安正')
-json.dump({'v':v,'h':h},open(os.path.join(root,'data','shape.json'),'w',encoding='utf-8'),ensure_ascii=False)
+pp={}
+for c in chars:
+    if len(c)==1:
+        r=parts(c)
+        if r: pp[c]=r[0]+r[1]+r[2]
+json.dump({'v':v,'h':h,'p':pp},open(os.path.join(root,'data','shape.json'),'w',encoding='utf-8'),ensure_ascii=False)
+print('parts',len(pp))
 print('chars',len(chars),'V',len(v),'H',len(h))
 # 講義レジュメの例で確認
 chk=lambda s,f:[c for c in s if c not in (v if f=='v' else h)]

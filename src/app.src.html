@@ -959,8 +959,19 @@ function render(){
   // 字形の自動判定：全ての字が左右に割れる→縦分離名、全ての字が上下に割れる→横分離名（候補としてチェックを入れる。外せる）
   const strc=(()=>{ let prev=''; return [...(seiStr+meiStr)].map(ch=>{ const k=(ch==='々'&&prev)?prev:ch; prev=k; const v=SHAPE_V.has(k), h2=SHAPE_H.has(k); return {ch,v,h:h2,label:v&&h2?'左右・上下':v?'左右':h2?'上下':'一体'}; }); })();
   const allV=strc.length>=2&&strc.every(c=>c.v), allH=strc.length>=2&&strc.every(c=>c.h);
+  // 縛り（部首・偏旁の重複）：同じ偏・つくり・冠が、姓名の2字以上に出てくる（偏と同じ字そのものも含む）
+  const PART=SHAPE.p||{};
+  const repeats=[];
+  { const cs=[...(seiStr+meiStr)];
+    for(const [type,idx,kind] of [['h',1,'偏'],['h',2,'つくり'],['v',1,'冠']]){
+      const by={};
+      cs.forEach((ch,i)=>{ if(ch==='々') return; const q=PART[ch];
+        if(q&&q[0]===type){ const k=q[idx]; (by[k]=by[k]||{s:0,i:new Set()}).s++; by[k].i.add(i); }
+        (by[ch]=by[ch]||{s:0,i:new Set()}).i.add(i); });
+      for(const comp in by){ const g=by[comp]; if(g.s>=1 && g.i.size>=2) repeats.push({kind,comp,chars:[...g.i].sort((x,y)=>x-y).map(i=>cs[i])}); } } }
+  const autoShibari=repeats.length>0;
   const autoKey=seiStr+' '+meiStr;
-  if(STATE.autoKey!==autoKey){ STATE.flags.tate=allV; STATE.flags.yoko=allH; STATE.autoKey=autoKey; }
+  if(STATE.autoKey!==autoKey){ STATE.flags.tate=allV; STATE.flags.yoko=allH; STATE.flags.shibari=autoShibari; STATE.autoKey=autoKey; }
   const seiAllV=strc.slice(0,[...seiStr].length).every(c=>c.v);
   const shape = judgeShape(sei, mei, STATE.flags, baseBad);
   const sSt = {音:grp(sound), 形:grp(shape), 意味:grp(mean)};
@@ -971,7 +982,7 @@ function render(){
      <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-yoko" ${STATE.flags.yoko?'checked':''}>横分離名（かんむり等で上下に割れる字が多い）</label>
      <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-shibari" ${STATE.flags.shibari?'checked':''}>縛り（部首・偏旁の重複）</label>
    </div>
-   <p class="sub" style="margin:0 0 10px">字の構造（辞書データからの自動判定）：${strc.map(c=>esc(c.ch)+'＝'+c.label).join('　')}。${allV?'全ての字が左右に割れるため、縦分離名の候補です（違う場合は、チェックを外してください）。':allH?'全ての字が上下に割れるため、横分離名の候補です（違う場合は、チェックを外してください）。':'全ての字が同じ向きに割れているわけではないため、縦分離名・横分離名の候補には当たりません。'}${(!allV&&seiAllV)?'姓の字が全て左右に割れています。名には、割れない字を選ぶのが原則です。':''}</p>
+   <p class="sub" style="margin:0 0 10px">字の構造（辞書データからの自動判定）：${strc.map(c=>esc(c.ch)+'＝'+c.label).join('　')}。${allV?'全ての字が左右に割れるため、縦分離名の候補です（違う場合は、チェックを外してください）。':allH?'全ての字が上下に割れるため、横分離名の候補です（違う場合は、チェックを外してください）。':'全ての字が同じ向きに割れているわけではないため、縦分離名・横分離名の候補には当たりません。'}${(!allV&&seiAllV)?'姓の字が全て左右に割れています。名には、割れない字を選ぶのが原則です。':''}<br>部首・偏旁の重複（縛りの候補）：${repeats.length?repeats.map(r=>esc(r.kind+'「'+r.comp+'」（'+r.chars.join('・')+'）')).join('　')+'。同じ部分が重なっています（違う場合は、チェックを外してください）。':'偏・つくり・冠の重複は見つかりません。'}</p>
    <div class="grid">
     <div class="card"><div class="hd"><span class="ttl">音（字音）</span>${stTag(sSt.音)}</div>${list(sound)}</div>
     <div class="card"><div class="hd"><span class="ttl">形（字形）</span>${stTag(sSt.形)}</div>${list(shape)}</div>
