@@ -973,15 +973,16 @@ function render(){
   // 縛り（部首・偏旁の重複）：同じ偏・つくり・冠が、姓名の2字以上に出てくる（偏と同じ字そのものも含む）
   const PART=SHAPE.p||{};
   const repeats=[];
-  { const cs=[...(seiStr+meiStr)];
+  { const cs=[...(seiStr+meiStr)], seiN=[...seiStr].length;
     for(const [type,idx,kind] of [['h',1,'偏'],['h',2,'つくり'],['v',1,'冠']]){
       const by={};
       cs.forEach((ch,i)=>{ if(ch==='々') return; const q=PART[ch];
         if(q&&q[0]===type){ const k=q[idx]; (by[k]=by[k]||{s:0,i:new Set()}).s++; by[k].i.add(i); }
         (by[ch]=by[ch]||{s:0,i:new Set()}).i.add(i); });
-      for(const comp in by){ const g=by[comp]; if(g.s>=1 && g.i.size>=2) repeats.push({kind,comp,chars:[...g.i].sort((x,y)=>x-y).map(i=>cs[i])}); } } }
+      for(const comp in by){ const g=by[comp]; if(g.s>=1 && g.i.size>=2 && [...g.i].some(i=>i>=seiN)) repeats.push({kind,comp,chars:[...g.i].sort((x,y)=>x-y).map(i=>cs[i])}); } } }   // 姓の中だけの重複は、姓そのものの性質なので、縛りにしない（名の字を含む重複だけ）
   { const cs2=[...(seiStr+meiStr)].filter(c=>c!=='々'), seen2={}; cs2.forEach(c=>{ seen2[c]=(seen2[c]||0)+1; });
-    for(const c in seen2) if(seen2[c]>=2 && PART[c]) repeats.push({kind:'本字',comp:c,chars:Array(seen2[c]).fill(c)}); }
+    const meiSet=new Set([...meiStr]);
+    for(const c in seen2) if(seen2[c]>=2 && PART[c] && meiSet.has(c)) repeats.push({kind:'本字',comp:c,chars:Array(seen2[c]).fill(c)}); }
   const autoShibari=repeats.length>0;
   const autoKey=seiStr+' '+meiStr;
   if(STATE.autoKey!==autoKey){ STATE.flags.tate=allV; STATE.flags.yoko=allH; STATE.flags.shibari=autoShibari; STATE.autoKey=autoKey; }
