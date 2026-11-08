@@ -765,7 +765,8 @@ const JST=9*3600000;
   const pad=()=>{ fix(); const r=parseDateText(inp.value); if(r) inp.value=`${r.y}/${String(r.m).padStart(2,'0')}/${String(r.d).padStart(2,'0')}`; };
   inp.addEventListener('blur',pad);
   inp.addEventListener('change',pad);
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') pad(); });
+  inp.addEventListener('keydown',e=>{ if(e.isComposing||e.keyCode===229) return; if(e.key==='Enter') pad(); });   // 日本語入力の変換確定のEnterでは、値を触らない
+  inp.addEventListener('compositionend',()=>setTimeout(fix,0));
 })();
 function parseDateText(v){
   v=(v||'').trim().replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248));
@@ -1338,7 +1339,7 @@ document.getElementById('reset').addEventListener('click',()=>{
 });
 function syncHonmei(){ const b=parseBirth(); if(b) document.getElementById('honmei').value=STARS[kigaku(b).hon]; }
 document.getElementById('go').addEventListener('click',()=>{ syncHonmei(); STATE.ov={n:{},sel:{}}; render(); });
-for(const id of ['full','yomi','zoku','birth']) document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ syncHonmei(); STATE.ov={n:{},sel:{}}; render(); }});
+for(const id of ['full','yomi','zoku','birth']) document.getElementById(id).addEventListener('keydown',e=>{ if(e.isComposing||e.keyCode===229) return; if(e.key==='Enter'){ syncHonmei(); STATE.ov={n:{},sel:{}}; render(); }});
 for(const id of ['zoku','honmei','sex']) document.getElementById(id).addEventListener('change',render);
 for(const id of ['birth','birthT']) document.getElementById(id).addEventListener('change',()=>{ const b=parseBirth(); if(b) document.getElementById('honmei').value=STARS[kigaku(b).hon]; render(); });
 
