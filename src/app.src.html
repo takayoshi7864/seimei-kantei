@@ -53,6 +53,7 @@ input.num{width:5em}
 button.primary{background:var(--accent);color:#fff;border:0;border-radius:6px;height:40px;padding:0 22px;font:inherit;font-size:16px;cursor:pointer}
 button.reset{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;height:40px;padding:0 22px;font:inherit;font-size:16px;cursor:pointer}
 button.small{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
+.actions{display:flex;gap:10px;align-items:center}
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
 th{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
@@ -95,12 +96,50 @@ ul.pl{margin:4px 0;padding-left:1.2em}
 .hidden{display:none}
 .err{display:block;color:var(--bad);font-size:13px;line-height:20px;height:20px;margin-top:2px;white-space:nowrap}
 .row.top{align-items:flex-start;padding-bottom:22px}   /* 2行目の下にも、1行目のエラー行と同じだけの余白を空けておく */
-.row.top>button{align-self:flex-end}
+.row.top .actions{margin-top:20px}
+.row.top #full, .row.top #yomi{width:13em}
+.row.top #birth{width:9.5em}
+.row.top #birthT{width:8.5em}
+.row.top #sex{width:7.5em}
+.row.top #zoku{width:7.5em}
+.row.top #honmei{width:8.5em}
 details{margin:6px 0}
 summary{cursor:pointer;color:var(--accent)}
 pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
 .mono{font-family:ui-monospace,Menlo,monospace}
-@media (max-width:640px){ main{padding:10px} input.kanji{width:100%} }
+@media (max-width:640px){
+  main{padding:10px}
+  input.kanji{width:100%}
+  .row.top{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px 10px;
+    padding-bottom:8px;
+  }
+  .row.top>label{
+    width:100%;
+  }
+  .row.top>label input,
+  .row.top>label select{
+    width:100% !important;
+  }
+  .row.top>.col-full{
+    grid-column:1 / -1;
+  }
+  .row.top>.actions{
+    grid-column:1 / -1;
+    display:flex;
+    gap:10px;
+    width:100%;
+    margin-top:4px;
+  }
+  .row.top>.actions button{
+    flex:1;
+    height:44px;
+    padding:0 12px;
+    white-space:nowrap;
+  }
+}
 </style>
 </head>
 <body>
@@ -117,19 +156,21 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
 <section class="panel">
   <h2>入力</h2>
   <div class="row top">
-    <label>姓名（姓と名をスペースで区切る）<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
-    <label>読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err" role="alert"></span></label>
-    <label>生年月日（任意）<input id="birth" class="num" style="width:180px" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
+    <label class="col-full">姓名（姓と名をスペースで区切る）<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
+    <label class="col-full">読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err" role="alert"></span></label>
+    <label>生年月日（任意）<input id="birth" class="num" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
     <label>出生時刻（任意）<input id="birthT" type="time"></label>
     <label>性別（任意）
       <select id="sex"><option value="">指定なし</option><option value="m">男性</option><option value="f">女性</option></select>
     </label>
     <label>続柄（任意）<input id="zoku" value="" placeholder="例 長男" autocomplete="off"></label>
-    <label>本命星（任意）
+    <label class="col-full">本命星（任意）
       <select id="honmei"><option value="">指定なし</option><option>一白水星</option><option>二黒土星</option><option>三碧木星</option><option>四緑木星</option><option>五黄土星</option><option>六白金星</option><option>七赤金星</option><option>八白土星</option><option>九紫火星</option></select>
     </label>
-    <button class="primary" id="go">鑑定する</button>
-    <button class="reset" id="reset" type="button">リセット</button>
+    <div class="actions">
+      <button class="primary" id="go">鑑定する</button>
+      <button class="reset" id="reset" type="button">リセット</button>
+    </div>
   </div>
 </section>
 <div id="result"></div>
