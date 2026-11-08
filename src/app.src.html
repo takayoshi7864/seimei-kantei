@@ -34,7 +34,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .theme button+button{border-left:1px solid var(--line)}
 .theme button.on{background:var(--accent);color:var(--bg);font-weight:700}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 "Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 "Hiragino Sans","Yu Gothic",system-ui,sans-serif;overscroll-behavior-x:none}
 header{padding:14px 16px 0;max-width:1100px;margin:0 auto}
 h1{font-size:20px;margin:0 0 8px;letter-spacing:.05em}
 nav{display:flex;gap:4px;border-bottom:1px solid var(--line);max-width:1100px;margin:0 auto;padding:0 16px}
@@ -1500,12 +1500,71 @@ applyTheme(THEME);
 document.querySelectorAll('#theme button').forEach(b=>b.addEventListener('click',()=>{ THEME=b.dataset.m; LS.set('theme',THEME); applyTheme(THEME); }));
 
 /* ================= タブ ================= */
+const TABS = ['kantei', 'search', 'kaku'];
+function switchTab(t){
+  const btn = document.querySelector(`#tabs button[data-t="${t}"]`);
+  if(!btn) return;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===btn));
+  for(const id of TABS) document.getElementById('t-'+id).classList.toggle('hidden', id!==t);
+  if(t==='search') search();
+  if(t==='kaku') kakuList();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
 document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  for(const t of ['kantei','search','kaku']) document.getElementById('t-'+t).classList.toggle('hidden', t!==b.dataset.t);
-  if(b.dataset.t==='search') search();
-  if(b.dataset.t==='kaku') kakuList();
+  switchTab(b.dataset.t);
 }));
+
+/* ================= 画面スワイプでタブ切り替え ================= */
+(function(){
+  let startX = 0, startY = 0, startTime = 0;
+  let isTracking = false;
+
+  document.addEventListener('touchstart', e => {
+    if(e.touches.length !== 1) { isTracking = false; return; }
+    const t = e.touches[0];
+    if(e.target.closest('input, select, textarea, button, a, details, summary')) {
+      isTracking = false;
+      return;
+    }
+    const edgeMargin = 20;
+    if(t.clientX < edgeMargin || t.clientX > window.innerWidth - edgeMargin){
+      isTracking = false;
+      return;
+    }
+    startX = t.clientX;
+    startY = t.clientY;
+    startTime = Date.now();
+    isTracking = true;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if(!isTracking) return;
+    isTracking = false;
+    if(!e.changedTouches || e.changedTouches.length !== 1) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    const dt = Date.now() - startTime;
+
+    const minDistance = 45;
+    if(Math.abs(dx) >= minDistance && Math.abs(dx) > Math.abs(dy) * 1.4 && dt < 800){
+      const curBtn = document.querySelector('#tabs button.on');
+      const curTab = curBtn ? curBtn.dataset.t : 'kantei';
+      const curIdx = TABS.indexOf(curTab);
+      if(curIdx === -1) return;
+
+      if(dx < 0 && curIdx < TABS.length - 1){
+        // 左スワイプ（指を右から左へなぞる）→ 次のタブへ進む
+        switchTab(TABS[curIdx + 1]);
+      } else if(dx > 0 && curIdx > 0){
+        // 右スワイプ（指を左から右へなぞる）→ 前のタブへ戻る
+        switchTab(TABS[curIdx - 1]);
+      }
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchcancel', () => { isTracking = false; }, { passive: true });
+})();
 </script>
 </body>
 </html>
