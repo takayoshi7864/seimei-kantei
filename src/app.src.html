@@ -685,7 +685,7 @@ function judgeKaku(P, kyoOther){
     if(STRONG_NUMS.includes(nn)) strong=true;
     rows.push({n,v,role,k:{...k,g},cls,notes});
   }
-  const refs=[['点数',P.tensuu,'家系の入口（姓の最初の字）'],['定数',P.teisuu,'結末・着地点（名の最後の字）']].map(([n,v,role])=>({n,v,role,k:kakuInfo(v)}));
+  const refs=[['天数',P.tensuu,'家系の入口（姓の最初の字）'],['底数',P.teisuu,'結末・着地点（名の最後の字）']].map(([n,v,role])=>({n,v,role,k:kakuInfo(v)}));
   const st = bad?'bad':(good===rows.length?'good':'warn');
   return {st, rows, refs, strong};
 }
@@ -700,12 +700,12 @@ function judgeTenchi(P, honmei, upper){
     let extra='';
     if(honmei && (honmei.startsWith('六白')||honmei.startsWith('五黄'))) extra+='本命星が六白・五黄のため、最も強く揉めます。';
     if(P.tenGyo==='火') extra+='火の五行の天地同数は、最も強く揉める・暴走するとされます。';
-    add('bad',`天地同数（点数${ten}画・地数${chi}画）`,'大凶を超える大凶。天と地が張り合って離れ、直属の上司・社長・目上との関係が決裂・衝突します。肉体と精神の分離や難病など、健康も著しく害されるとされます。'+extra);
+    add('bad',`天地同数（天数${ten}画・地数${chi}画）`,'大凶を超える大凶。天と地が張り合って離れ、直属の上司・社長・目上との関係が決裂・衝突します。肉体と精神の分離や難病など、健康も著しく害されるとされます。'+extra);
   }
   // 天地衝突
   const clash = n => [3,5,9].includes(n%10);
   if(ten!==chi && clash(ten) && clash(chi)){
-    add('bad',`天地衝突（点数${ten}画・地数${chi}画）`,'凶の相。感情的な喧嘩・反発が激しく、直属の上司・責任者・目上に突っかかりやすい。上下関係にネジレが生じて物別れとなり、実りや収入に結びつきにくい。画数が大きいほど強まります。');
+    add('bad',`天地衝突（天数${ten}画・地数${chi}画）`,'凶の相。感情的な喧嘩・反発が激しく、直属の上司・責任者・目上に突っかかりやすい。上下関係にネジレが生じて物別れとなり、実りや収入に結びつきにくい。画数が大きいほど強まります。');
   }
   // 天地相同数
   if(P.tenkaku===P.chikaku){
@@ -727,13 +727,13 @@ function judgeTenchi(P, honmei, upper){
   if(sho) add('warn','天小地大',sho+SHO);
   if(!items.length) items.push({st:'good',t:'天地の配合',d:`天地同数・天地衝突・天地相同数・天大地小・天小地大のいずれにも当たりません（天大地小・天小地大は、画数が2倍程度（1.8倍以上）離れているか、文字数の上下が極端に偏っているかで判定）。`});
   const tenchiSt = st;
-  // 天底（点数×定数）
+  // 天底（天数×底数）
   const dIt=[]; let dst='good';
   if(ten===tei){
     const bad = [upper.yomi,upper.gogyo,upper.inyou,tenchiSt].some(x=>x==='bad');
-    if(bad){ dst='bad'; dIt.push({st:'bad',t:`天底同数（点数${ten}画・定数${tei}画）が作動`,d:'名前を毛書きに切る「大動角」。社会運・家庭運の急変、不慮の事故（難死）を誘発する凶相。五大真理に崩れがある凶名のため、凶作用が表面化します。'}); }
-    else dIt.push({st:'good',t:`天底同数（点数${ten}画・定数${tei}画）は不活性`,d:'天底の配合は、五大真理のいずれかに崩れがある凶名のときだけ作用します。上位の真理に凶が無いため、悪影響は出ません（読み下しを自動判定のままにしている場合は、読み下しの判断もご確認ください）。'});
-  }else dIt.push({st:'good',t:'天底の配合',d:`点数${ten}画と定数${tei}画は同数ではありません。`});
+    if(bad){ dst='bad'; dIt.push({st:'bad',t:`天底同数（天数${ten}画・底数${tei}画）が作動`,d:'名前を毛書きに切る「大動角」。社会運・家庭運の急変、不慮の事故（難死）を誘発する凶相。五大真理に崩れがある凶名のため、凶作用が表面化します。'}); }
+    else dIt.push({st:'good',t:`天底同数（天数${ten}画・底数${tei}画）は不活性`,d:'天底の配合は、五大真理のいずれかに崩れがある凶名のときだけ作用します。上位の真理に凶が無いため、悪影響は出ません（読み下しを自動判定のままにしている場合は、読み下しの判断もご確認ください）。'});
+  }else dIt.push({st:'good',t:'天底の配合',d:`天数${ten}画と底数${tei}画は同数ではありません。`});
   const all = (st==='bad'||dst==='bad')?'bad':(st==='warn'?'warn':'good');
   return {st:all, tenchi:{st,items}, teitei:{st:dst,items:dIt}, ten, chi, tei};
 }
@@ -940,7 +940,7 @@ function render(){
     ['総格',P.soukaku,'姓名の合計','晩年期（数え55歳以降）。人生の全体像と結末。'],
     ['天数',P.tensuu,'姓の最初の字','天地・天底の配合に使います。'],
     ['地数',P.chisuu,'名の最初の字','最重要。人格・地格の双方に影響します。'],
-    ['定数',P.teisuu,'名の最後の字','天底の配合に使います。']
+    ['底数',P.teisuu,'名の最後の字','天底の配合に使います。']
    ].map(([n,v,how,role])=>`<tr><td><b>${n}</b></td><td>${v}</td><td class="sub">${how}</td><td class="sub">${role}</td></tr>`).join('')}
   </tbody></table></section>`;
 
