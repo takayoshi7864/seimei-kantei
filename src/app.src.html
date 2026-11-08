@@ -515,8 +515,7 @@ function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, sex){
   const items=[]; const hits=[];
   for(const [pat,pos,,note] of KYOSOU){
     if(pos==='any'){
-      if(meiStr.includes(pat)) hits.push({where:'名',pat,note});
-      else if(seiStr.includes(pat)) hits.push({where:'姓（参考）',pat,note,ref:true});
+      if(meiStr.includes(pat)) hits.push({where:'名',pat,note});   // 姓の字は、姓そのものに吉凶がないので、判定にも注意にも出さない
     }else if(pos==='name'){
       // 名全体がその名であるときだけ（読みが字の境目をまたいで一致しても当てない：例 啓祐＝たかよし に「かよ」）
       if(meiStr===pat || (yomi && yomi===pat)) hits.push({where:'名',pat,note});
