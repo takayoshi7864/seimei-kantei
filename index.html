@@ -1322,7 +1322,7 @@ function labelTables(root){
 }
 for(const id of ['result','qres','kres']){ const el=document.getElementById(id); if(el) new MutationObserver(()=>labelTables(el)).observe(el,{childList:true}); }
 /* 読みの自動入力：漢字を日本語入力（IME）で打つとき、変換前のかな（読み）を覚えて、読みの欄に入れる */
-const AUTOKANA = {pairs:{}, last:'', manual:false};
+const AUTOKANA = {pairs:{}, seq:{}, n:0, last:'', manual:false};
 /* 調査用：URLの末尾に ?debug=1 を付けると、日本語入力のイベントの記録を画面の下に出す */
 if(/[?&]debug=1/.test(location.search)){
   const pre=document.createElement('pre');
@@ -1388,7 +1388,18 @@ if(/[?&]debug=1/.test(location.search)){
   const capFull=makeCapture(full), capYomi=makeCapture(yomi);
   full.addEventListener('compositionend',e=>{
     const {t,rd}=capFull.finish(e.data);
-    if(t && rd && t!==rd) AUTOKANA.pairs[t]=rd;
+    if(t && rd && t!==rd){
+      // 前に覚えた長い組み合わせ（例：啓祐＝たかよし）の一部（祐）を入れ直したとき、残りの部分（啓）の読みを、辞典の読みで切り出して残す
+      const rdsOf=ch=>{ const l=(lookupChars(ch)[0]||{}).list||[]; const set=new Set(); for(const e of l) for(const r of readingsOf(e)) set.add(r); return [...set].sort((x,y)=>y.length-x.length); };
+      for(const K of Object.keys(AUTOKANA.pairs)){
+        if(K===t || K.length<=t.length) continue;
+        const Rk=AUTOKANA.pairs[K]; let pre=null, preRd=null;
+        if(K.endsWith(t) && t.length===1){ for(const r of rdsOf(t)) if(Rk.endsWith(r) && Rk.length>r.length){ pre=K.slice(0,-1); preRd=Rk.slice(0,-r.length); break; } }
+        else if(K.startsWith(t) && t.length===1){ for(const r of rdsOf(t)) if(Rk.startsWith(r) && Rk.length>r.length){ pre=K.slice(1); preRd=Rk.slice(r.length); break; } }
+        if(pre!==null){ delete AUTOKANA.pairs[K]; delete AUTOKANA.seq[K]; if(!(pre in AUTOKANA.pairs)){ AUTOKANA.pairs[pre]=preRd; AUTOKANA.seq[pre]=++AUTOKANA.n; } }
+      }
+      AUTOKANA.pairs[t]=rd; AUTOKANA.seq[t]=++AUTOKANA.n;   // 新しく入力した読みを優先するため、順番を覚える
+    }
     fill();
   });
   full.addEventListener('input',e=>{ if(!e.isComposing) fill(); });
@@ -1411,8 +1422,8 @@ if(/[?&]debug=1/.test(location.search)){
   });
   yomi.addEventListener('blur',hiraFix);
   yomi.addEventListener('paste',()=>setTimeout(hiraFix,0));
-  function tokenReading(tok){                       // 記録した（漢字→読み）の組み合わせで、この語を組み立てる
-    const keys=Object.keys(AUTOKANA.pairs).sort((x,y)=>y.length-x.length), memo={};
+  function tokenReading(tok){                       // 記録した（漢字→読み）の組み合わせで、この語を組み立てる（新しく入力した読みを優先）
+    const keys=Object.keys(AUTOKANA.pairs).sort((x,y)=>(AUTOKANA.seq[y]||0)-(AUTOKANA.seq[x]||0)), memo={};
     const go=i=>{ if(i===tok.length) return ''; if(i in memo) return memo[i];
       let r=null;
       for(const k of keys){ if(tok.startsWith(k,i)){ const rest=go(i+k.length); if(rest!==null){ r=AUTOKANA.pairs[k]+rest; break; } } }
@@ -1428,7 +1439,7 @@ if(/[?&]debug=1/.test(location.search)){
     for(const t of toks){ const r=tokenReading(t); if(r===null) return; out.push(r); }   // 一部の漢字を消した・貼り替えたなどで、読みを組み立てられないときは、読みの欄を触らない（全部消えるのは、姓名の欄が空のときだけ）
     yomi.value=toHira(out.join(' '));
   }
-  AUTOKANA.reset=()=>{ AUTOKANA.pairs={}; AUTOKANA.last=''; AUTOKANA.manual=false; };
+  AUTOKANA.reset=()=>{ AUTOKANA.pairs={}; AUTOKANA.seq={}; AUTOKANA.n=0; AUTOKANA.last=''; AUTOKANA.manual=false; };
 })();
 document.getElementById('reset').addEventListener('click',()=>{
   for(const id of ['full','yomi','birth','birthT','zoku']) document.getElementById(id).value='';
