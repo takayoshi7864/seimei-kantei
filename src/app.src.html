@@ -723,7 +723,7 @@ function judgeTenchi(P, honmei, upper){
   }
   if(P.seiLen>=4 && P.meiLen===1){ dai=(dai?dai+'また、':'')+`${P.seiLen}文字の苗字に1文字の名前で、上が重すぎます（4文字苗字なら名前は最低2文字、できれば3文字）。`; }
   if(P.seiLen===1 && P.meiLen>=3){ sho=(sho?sho+'また、':'')+`1文字の苗字に${P.meiLen}文字の名前で、下が重すぎます。`; }
-  if(dai) add('warn','天大地小',dai+DAI);
+  if(dai) add('warn','天大地小',dai+DAI+((honmei&&honmei.startsWith('九紫'))?'本命星が九紫火星のため、影響が特に大きく出ます。':''));
   if(sho) add('warn','天小地大',sho+SHO);
   if(!items.length) items.push({st:'good',t:'天地の配合',d:`天地同数・天地衝突・天地相同数・天大地小・天小地大のいずれにも当たりません（天大地小・天小地大は、画数が2倍程度（1.8倍以上）離れているか、文字数の上下が極端に偏っているかで判定）。`});
   const tenchiSt = st;
