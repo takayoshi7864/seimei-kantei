@@ -1171,9 +1171,25 @@ function render(){
   for(const r of kaku.rows){ if(GCLS[r.k.g]==='bad'){ const b=r.k.base; addG('画数（格数）',`${r.n}　${r.v}画（${r.role}）　${b.l}`,b.t+((b.kyo&&kyoNow)?'　凶名の作用：'+b.kyo:'')); } }
   if(dark) addG('画数（格数）','ダークサイド効果','強い吉数が、凶の真理により悪い方向へ強まります。');
   if(kyomei){
-    h+=`<section class="panel" id="kyo-summary"><h2>凶のまとめ（起こりやすいこと）</h2>
+    h+=`<section class="panel" id="kyo-summary"><h2>総合評価（凶名）：凶の解説と、起こりやすいこと</h2>
       ${sumG.length?sumG.map(x=>`<h3>${esc(x.g)}</h3><ul class="pl">${x.rows.map(r=>`<li>${tag('bad','凶')} <b>${esc(r.t)}</b><br><span class="sub">${esc(r.d)}</span>${r.more?`<br><span class="sub">${esc(r.more)}</span>`:''}</li>`).join('')}</ul>`).join(''):'<p class="sub">個別の凶の項目はありません（読み下しの手動指定などで凶名になっています）。</p>'}
       <p class="sub">起こりやすいことは、講義資料にある象意をまとめたもので、必ず起こるという意味ではありません。</p></section>`;
+  } else {
+    // ===== 総合評価（正名）：整っている点と、正名としての作用 =====
+    const okRow=(t,d)=>`<li>${tag('good','吉')} <b>${esc(t)}</b>${d?`<br><span class="sub">${esc(d)}</span>`:''}</li>`;
+    const goods=items=>items.filter(i=>i.st==='good').map(i=>okRow(i.t,i.d)).join('');
+    const warns=[...sound,...shape,...mean,...gogyo.items,...inyou.items,...tenchi.tenchi.items,...tenchi.teitei.items].filter(i=>i.st==='warn');
+    const pairHtml=gogyo.pairs.map(pr=>{ const d=GOGYO_PAIR[pr.a+pr.b]; return d?okRow(`${pr.n}　${pr.a}－${pr.b}（${d[3]?'準正名':'正名'}の性質）`,d[0]):''; }).join('');
+    const kakuHtml=kaku.rows.map(r=>{ const b=r.k.base; const eff=b.sho?'正名の作用：'+b.sho:''; return `<li>${tag(GCLS[r.k.g],GLAB[r.k.g])} <b>${esc(r.n)}　${r.v}画（${esc(r.role)}）　${esc(b.l)}</b><br><span class="sub">${esc(b.t)}</span>${eff?`<br><span class="sub">${esc(eff)}</span>`:''}</li>`; }).join('');
+    h+=`<section class="panel" id="sho-summary"><h2>総合評価（正名）：整っている点と、正名の作用</h2>
+      <p>五大真理（読み下し・五行・陰陽・天地・画数）のどれにも凶がなく、正名です。画数が持つ本来の吉作用が、打ち消されずに、そのまま出やすい名前です。</p>
+      <h3>読み下し（音・字形・字義）</h3><ul class="pl">${goods(sound)}${goods(shape)}${goods(mean)}</ul>
+      <h3>五行</h3><ul class="pl">${goods(gogyo.items)}${pairHtml}</ul>
+      <h3>陰陽</h3><ul class="pl">${goods(inyou.items)}</ul>
+      <h3>天地・天底の配合</h3><ul class="pl">${goods(tenchi.tenchi.items)}${goods(tenchi.teitei.items)}</ul>
+      <h3>画数（格数）</h3><ul class="pl">${kakuHtml}</ul>
+      ${warns.length?`<h3>注意点（凶ではありませんが、気をつけたい点）</h3><ul class="pl">${warns.map(i=>`<li>${tag('warn','注意')} <b>${esc(i.t)}</b><br><span class="sub">${esc(i.d)}</span></li>`).join('')}</ul>`:''}
+      <p class="sub">整った形式は、方位や家相から得た運気を受け止める器になります。名前を日常で使い、心がけや行いを、その形に合わせていくことで、作用が現れやすくなります。</p></section>`;
   }
   box.innerHTML=verdictHtml+h; bind();
 }
