@@ -478,8 +478,10 @@ const DUAL = {
   '順':['鍋豚（亠）が口を塞ぐ構造。','五大真理が整えば吉の作用。','言いたいことが言えず、秘密や隠し事を溜め込む。'],
 };
 const DAKUON = /[がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽゔ]/;
-const CHOU_CHARS = ['一','太','長','大']; // 長男の字（一郎・太郎など）
-const JI_CHARS = ['二','次'];             // 次男の字（次郎・慎次など）
+// 出生順位を示す字（何番目の男子か）。一郎・太郎＝1、次郎・慎次＝2、三郎＝3 など
+const RANK_CHARS = {'一':1,'太':1,'長':1,'大':1,'二':2,'次':2,'三':3,'四':4,'五':5};
+const RANK_LABEL = ['','長男','次男','三男','四男','五男','六男','七男','八男','九男','十男'];
+const rankLabel = n => RANK_LABEL[n] || (n+'男');
 
 /* ================= 辞典照会 ================= */
 // 仮名の画数：ひらがなもカタカナの画数に換算する（講義の規則）。濁点は+2、半濁点は+1、小書き文字は元の字と同じ
@@ -629,8 +631,12 @@ function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, sex){
   }
   for(const h of hits) items.push({st:h.ref?'warn':'bad', t:`凶相文字「${h.pat}」（${h.where}）`, d:h.note});
   // 長男・次男の逆転
-  if(zoku==='chou' && [...meiStr].some(c=>JI_CHARS.includes(c))) items.push({st:'bad',t:'長男に次男の字',d:'家督をめぐる紛争、能力を発揮できない、組織内の下克上を招く。'});
-  if(zoku==='ji' && [...meiStr].some(c=>CHOU_CHARS.includes(c))) items.push({st:'bad',t:'次男に長男の字',d:'家督をめぐる紛争、能力を発揮できない、組織内の下克上を招く。'});
+  // 兄弟順位の逆転（続柄の順位と、名前の順位の字が合わない）。三男以下も対象
+  if(zoku>=1){
+    const seen=new Set();
+    for(const c of meiStr){ const m=RANK_CHARS[c]; if(m && m!==zoku && !seen.has(m)){ seen.add(m);
+      items.push({st:'bad',t:`${rankLabel(zoku)}に${rankLabel(m)}の字`,d:'家督をめぐる紛争、能力を発揮できない、組織内の下克上を招く。'}); } }
+  }
   if(baseBad!==null && baseBad!==undefined){
     for(const ch of new Set([...meiStr])){
       const d=DUAL[ch]; if(!d) continue;
@@ -1012,7 +1018,14 @@ function render(){
   const yomiSei = yp.length>=2 ? yp[0] : '';
   const yomi = yp.length>=2 ? yp.slice(1).join('') : (yp[0]||'');
   const zt = document.getElementById('zoku').value.trim();
-  const zoku = !zt ? '' : /長男|長子|第?一男|^男$/.test(zt) ? 'chou' : /次男|二男/.test(zt) ? 'ji' : 'other';
+  // 続柄 → 男子の順位（1＝長男、2＝次男、3＝三男…）。読み取れないときは0（判定しない）
+  const zoku = (()=>{ if(!zt) return 0;
+    const t = zt.replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0));
+    if(/長男|長子|^男$/.test(t)) return 1;
+    if(/次男/.test(t)) return 2;
+    const KN={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
+    const m = t.match(/([一二三四五六七八九十]|\d+)男/);
+    return m ? (KN[m[1]] || parseInt(m[1],10) || 0) : 0; })();
   const honmei = document.getElementById('honmei').value;
   const box = document.getElementById('result');
   if(!seiStr){ box.innerHTML=''; return; }
