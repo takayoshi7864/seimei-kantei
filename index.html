@@ -1604,8 +1604,12 @@ function switchTab(t, animate = true){
   setTimeout(onEnd, 350);
 }
 
+// パソコン（マウスなど細かい操作ができ、ホバーできる環境）では、横スライドの動きは付けず、ふつうのタブのように即座に切り替える。
+// スマートフォンなどのタッチ端末では、従来どおりスライドして切り替える
+const isDesktopPointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
 tabButtons.forEach(b => b.addEventListener('click', () => {
-  switchTab(b.dataset.t, true);
+  switchTab(b.dataset.t, !isDesktopPointer());
 }));
 
 /* ================= 画面スワイプで画面移動 & 切り替え ================= */
