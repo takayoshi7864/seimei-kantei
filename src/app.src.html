@@ -223,7 +223,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
     <label>性別（任意）
       <select id="sex"><option value="">指定なし</option><option value="m">男性</option><option value="f">女性</option></select>
     </label>
-    <label>続柄（任意）<input id="zoku" value="" placeholder="例 長男" autocomplete="off"></label>
+    <label>続柄（任意）<input id="zoku" value="" placeholder="例 長男・次女" autocomplete="off"></label>
     <label class="col-full">本命星（任意）
       <select id="honmei"><option value="">指定なし</option><option>一白水星</option><option>二黒土星</option><option>三碧木星</option><option>四緑木星</option><option>五黄土星</option><option>六白金星</option><option>七赤金星</option><option>八白土星</option><option>九紫火星</option></select>
     </label>
@@ -481,6 +481,8 @@ const DAKUON = /[がぎぐげござじずぜぞだぢづでどばびぶべぼぱ
 // 出生順位を示す字（何番目の男子か）。一郎・太郎＝1、次郎・慎次＝2、三郎＝3 など
 const RANK_CHARS = {'一':1,'太':1,'長':1,'大':1,'二':2,'次':2,'三':3,'四':4,'五':5};
 const RANK_LABEL = ['','長男','次男','三男','四男','五男','六男','七男','八男','九男','十男'];
+// 順位の字としては弱いもの（名前の定番の字でもあるため、「一」「二」「次」などの明確な字が名前に無いときだけ、注意として出す）
+const RANK_WEAK = {'安':1,'賢':1,'工':2};   // 治は読みで決める（おさむ＝長男、じ＝次男）
 const rankLabel = n => RANK_LABEL[n] || (n+'男');
 
 /* ================= 辞典照会 ================= */
@@ -636,6 +638,13 @@ function judgeMeaning(seiStr, meiStr, yomi, zoku, baseBad, sex){
     const seen=new Set();
     for(const c of meiStr){ const m=RANK_CHARS[c]; if(m && m!==zoku && !seen.has(m)){ seen.add(m);
       items.push({st:'bad',t:`${rankLabel(zoku)}に${rankLabel(m)}の字`,d:'家督をめぐる紛争、能力を発揮できない、組織内の下克上を招く。'}); } }
+    if(!meiStr.split('').some(c=>RANK_CHARS[c])){       // 明確な順位の字が無いときだけ、安・賢・工・治を見る
+      const hy=kata2hira(yomi||''); const weak=new Map();
+      for(const c of meiStr){ let m=RANK_WEAK[c];
+        if(c==='治'){ if(hy.includes('おさむ')) m=1; else if(meiStr.endsWith('治') && hy.endsWith('じ')) m=2; }
+        if(m && m!==zoku && !weak.has(m)) weak.set(m,c); }
+      for(const [m,c] of weak) items.push({st:'warn',t:`${rankLabel(zoku)}に${rankLabel(m)}の字（${c}）`,d:`「${c}」は${rankLabel(m)}に用いる字とされます。家督をめぐる紛争、能力を発揮できない、組織内の下克上を招くおそれがあります。`});
+    }
   }
   if(baseBad!==null && baseBad!==undefined){
     for(const ch of new Set([...meiStr])){
@@ -1019,8 +1028,10 @@ function render(){
   const yomi = yp.length>=2 ? yp.slice(1).join('') : (yp[0]||'');
   const zt = document.getElementById('zoku').value.trim();
   // 続柄 → 男子の順位（1＝長男、2＝次男、3＝三男…）。読み取れないときは0（判定しない）
+  // 女子（長女・次女・三女…）も同じ階層まで入力できるが、資料に女子の順位の規則が無いため、順位の判定はしない
   const zoku = (()=>{ if(!zt) return 0;
     const t = zt.replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0));
+    if(/女/.test(t) && !/男/.test(t)) return 0;
     if(/長男|長子|^男$/.test(t)) return 1;
     if(/次男/.test(t)) return 2;
     const KN={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
