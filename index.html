@@ -116,7 +116,7 @@ ul.pl{margin:4px 0;padding-left:1.2em}
 .err{display:block;color:var(--bad);font-size:13px;line-height:20px;margin-top:2px;white-space:nowrap}
 .err:empty{display:none;height:0;margin:0}
 .row.top{align-items:flex-start;padding-bottom:22px}   /* 2行目の下にも、1行目のエラー行と同じだけの余白を空けておく */
-.row.top .actions{margin-top:20px}
+.row.top .actions{align-self:flex-end}   /* ボタンの上下を、隣の入力欄（高さ40px）と同じ位置にそろえる */
 .row.top #full, .row.top #yomi{width:13em}
 .row.top #birth{width:9.5em}
 .row.top #birthT{width:8.5em}
@@ -162,6 +162,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
     gap:10px;
     width:100%;
     margin-top:4px;
+    align-self:auto;
   }
   .row.top>.actions button{
     flex:1;
@@ -228,7 +229,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
       <select id="honmei"><option value="">指定なし</option><option>一白水星</option><option>二黒土星</option><option>三碧木星</option><option>四緑木星</option><option>五黄土星</option><option>六白金星</option><option>七赤金星</option><option>八白土星</option><option>九紫火星</option></select>
     </label>
     <div class="actions">
-      <button class="primary" id="go">鑑定する</button>
+      <button class="primary" id="go">鑑定</button>
       <button class="reset" id="reset" type="button">リセット</button>
     </div>
   </div>
