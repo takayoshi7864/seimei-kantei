@@ -217,15 +217,15 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
 <section class="panel">
   <h2>入力</h2>
   <div class="row top">
-    <label class="col-full">姓名（姓と名をスペースで区切る）<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
-    <label class="col-full">読み（姓と名をスペースで区切る・任意）<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err" role="alert"></span></label>
-    <label>生年月日（任意）<input id="birth" class="num" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
-    <label>出生時刻（任意）<input id="birthT" type="time"></label>
-    <label>性別（任意）
+    <label class="col-full">姓名<input id="full" class="kanji" value="" placeholder="例 佐藤 太郎" autocomplete="off"></label>
+    <label class="col-full">読み<input id="yomi" value="" placeholder="例 さとう たろう" autocomplete="off"><span id="yomi-err" class="err" role="alert"></span></label>
+    <label>生年月日<input id="birth" class="num" inputmode="numeric" placeholder="例 1985/7/13" autocomplete="off"></label>
+    <label>出生時刻<input id="birthT" type="time"></label>
+    <label>性別
       <select id="sex"><option value="">指定なし</option><option value="m">男性</option><option value="f">女性</option></select>
     </label>
-    <label>続柄（任意）<input id="zoku" value="" placeholder="例 長男・次女" autocomplete="off"></label>
-    <label class="col-full">本命星（任意）
+    <label>続柄<input id="zoku" value="" placeholder="例 長男・次女" autocomplete="off"></label>
+    <label class="col-full">本命星
       <select id="honmei"><option value="">指定なし</option><option>一白水星</option><option>二黒土星</option><option>三碧木星</option><option>四緑木星</option><option>五黄土星</option><option>六白金星</option><option>七赤金星</option><option>八白土星</option><option>九紫火星</option></select>
     </label>
     <div class="actions">
@@ -242,7 +242,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
 <section class="panel">
   <h2>字典検索</h2>
   <div class="row">
-    <label>検索語（漢字・読み・名乗り）<input id="q" class="kanji" placeholder="例 崎 / たか / ひろ" autocomplete="off"></label>
+    <label>検索語<input id="q" class="kanji" placeholder="例 崎 / たか / ひろ" autocomplete="off"></label>
     <label>画数<input id="qn" class="num" type="number" min="1" max="30" placeholder="全て"></label>
     <label>五行
       <select id="qg"><option value="">全て</option><option>木</option><option>火</option><option>土</option><option>金</option><option>水</option></select>
@@ -256,7 +256,7 @@ pre.cfg{width:100%;min-height:150px;font:12px/1.5 ui-monospace,Menlo,monospace}
 <!-- ===== 画数の深義 ===== -->
 <div id="t-kaku" class="tab-pane inactive">
 <section class="panel">
-  <h2>画数の深義（1〜81画）</h2>
+  <h2>画数の深義</h2>
   <div class="row"><label>画数で絞る<input id="kn" class="num" type="number" min="1" max="81" placeholder="全て"></label>
   <label>区分<select id="kg"><option value="">全て</option><option>大吉</option><option>吉</option><option>中</option><option>凶</option><option>大凶</option></select></label></div>
   <div id="kres"></div>
@@ -372,6 +372,10 @@ const KYOSOU = [
   ['神','any',null,'神聖・高貴すぎる文字。一般人の生命力ではその格に耐えきれず、運気が圧死・破滅する。'],  ['熊','any',null,'動物名は人間に比べて寿命が短く生活が不安定。人間の品格と運気の安定を損なう。'],
   ['九','nameHead',null,'名頭（地数）に九角を用いると、五大真理に関わらず無条件の凶名。五行の「火」に属し、強い精神的動揺・不安・情緒不安定を招き、火の暴走で事件や事故に自ら飛び込む。'],
   ['千','any',null,'数字は、その数だけ同じ苦労や失敗を繰り返す負の循環を招く（千＝1,000回）。'],
+  ['星','any',null,'感情が乱れ、心が欠け、人との離別や途絶を招く。'],
+  ['解','any',null,'人間関係・家族・組織・事業がばらばらに解体し、途絶する。'],
+  ['傷','any',null,'怪我や事故、人間関係での強い精神的な痛手を招く。'],
+  ['苑','any',null,'墓地・事故現場などの象意で、人生の停滞と衰退を招く。'],
   ['甲','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
   ['乙','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
   ['丙','any',null,'十干十二支は運気の起伏が極端になり、環境の変化に耐えきれず倒産や途絶を招く。'],
@@ -473,6 +477,8 @@ const DUAL = {
   '七':['骨を切断した切り口の象形。','完成・成就を意味する。','肉体・人生・人間関係の切断・断絶を引き起こす。'],
   '桜':['感受性の高い字。','五大真理が整えば吉の作用。','五大真理が崩れると凶の副作用が出る。'],
   '瞳':['易の山水蒙（幼くして目が開かれていない状態）。','澄んだ洞察力となる。','40代・50代でも子供のように世間知らずで盲目的な判断を繰り返し、自滅する。'],
+  '告':['祝詞を入れた器に、神への告げを込めた形。','神の教えを周囲に広める働きになる。','嘘をつく、裁判や訴訟のもめごとを招く。'],
+  '玲':['「レイ」の音は、零・礼・霊と同じ、ゼロの仲間。','五大真理が整えば、悪い働きは出にくい。','すべてがゼロに戻り、人生が途中で割れる。'],
   '順':['鍋豚（亠）が口を塞ぐ構造。','五大真理が整えば吉の作用。','言いたいことが言えず、秘密や隠し事を溜め込む。'],
 };
 const DAKUON = /[がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽゔ]/;
@@ -690,7 +696,7 @@ function judgeSound(yomi, meiChars, yomiSei, meiStr){
   else if(yomi && yomi.endsWith('ん')) items.push({st:'good',t:'「ん」止まり',d:'漢字表記の読みに含まれる「ん」は、打ち止めの凶構造にはなりません。'});
   // 名頭の凶音
   const head = SOUND_HEAD.find(([h])=>reading.startsWith(h));
-  if(head) items.push({st:'bad',t:`名頭の音「${head[0]}」`,d:head[1]});
+  if(head) items.push({st:'bad',t:`名頭の音「${head[0]}」`,d:''});
   if(yomiSei){
     const K=[...yomiSei].filter(c=>c!=='ー'), M=[...reading].filter(c=>c!=='ー');
     const rep_=[];
@@ -790,7 +796,7 @@ function kakuInfo(v){
 }
 function judgeKaku(P, kyoOther){
   const rows=[]; let bad=false, good=0, warn=false, strong=false;
-  const parts_=[['人格',P.jinkaku,'中年期（数え28〜54歳）'],['地格',P.chikaku,'初年期（数え1〜27歳）'],['総格',P.soukaku,'晩年期（数え55歳〜）'],['地数',P.chisuu,'全生涯の基盤（最重要部位）']];
+  const parts_=[['人格',P.jinkaku,'中年期　数え28〜54歳'],['地格',P.chikaku,'初年期　数え1〜27歳'],['総格',P.soukaku,'晩年期　数え55歳〜'],['地数',P.chisuu,'全生涯の基盤']];
   for(const [n,v,role] of parts_){
     const k=kakuInfo(v); const notes=[];
     let g=k.g; const nn=k.n;
@@ -810,7 +816,7 @@ function judgeKaku(P, kyoOther){
     if(STRONG_NUMS.includes(nn)) strong=true;
     rows.push({n,v,role,k:{...k,g},cls,notes});
   }
-  const refs=[['天数',P.tensuu,'家系の入口（姓の最初の字）'],['底数',P.teisuu,'結末・着地点（名の最後の字）']].map(([n,v,role])=>({n,v,role,k:kakuInfo(v)}));
+  const refs=[['天数',P.tensuu,'家系の入口'],['底数',P.teisuu,'結末・着地点']].map(([n,v,role])=>({n,v,role,k:kakuInfo(v)}));
   const st = bad?'bad':(good===rows.length?'good':'warn');
   return {st, rows, refs, strong};
 }
@@ -1070,9 +1076,9 @@ function render(){
   h+=`<h3>格と部位</h3><table><thead><tr><th>部位</th><th>画数</th><th>算出</th><th>受け持つ時期・領域</th></tr></thead><tbody>
    ${[
     ['天格',P.tenkaku,'姓の合計','先祖から受け継ぐ環境。個人の吉凶判断には使いません。'],
-    ['人格',P.jinkaku,'姓の最後の字＋名の最初の字','中年期（数え28〜54歳）。対人接続・親子関係。'],
-    ['地格',P.chikaku,'名の合計','初年期（数え1〜27歳）。内面・本質的な性格。'],
-    ['総格',P.soukaku,'姓名の合計','晩年期（数え55歳以降）。人生の全体像と結末。'],
+    ['人格',P.jinkaku,'姓の最後の字＋名の最初の字','中年期　数え28〜54歳'],
+    ['地格',P.chikaku,'名の合計','初年期　数え1〜27歳'],
+    ['総格',P.soukaku,'姓名の合計','晩年期　数え55歳以降'],
     ['天数',P.tensuu,'姓の最初の字','天地・天底の配合に使います。'],
     ['地数',P.chisuu,'名の最初の字','最重要。人格・地格の双方に影響します。'],
     ['底数',P.teisuu,'名の最後の字','天底の配合に使います。']
@@ -1113,23 +1119,25 @@ function render(){
   const seiAllV=strc.slice(0,[...seiStr].length).every(c=>c.v);
   const shape = judgeShape(sei, mei, STATE.flags, baseBad, repeats);
   const sSt = {音:grp(sound), 形:grp(shape), 意味:grp(mean)};
-  const list = items=>`<ul class="pl">${items.map(i=>`<li>${tag(ST[i.st]?ST[i.st][0]:i.st, ST[i.st]?ST[i.st][1]:i.st)} <b>${esc(i.t)}</b><br><span class="sub">${esc(i.d)}</span></li>`).join('')}</ul>`;
-  h+=`<section class="panel"><h2>手順2　三大原則（音・形・意味）</h2>
+  const tt = t=>String(t||'').replace(/（([^）]*)）/g,(m,a)=>/\d/.test(a)?m:'');
+  const sh = d=>String(d||'').replace(/（[^）]*）/g,'').split('。')[0];
+  const list = items=>`<ul class="pl">${items.map(i=>`<li>${tag(ST[i.st]?ST[i.st][0]:i.st, ST[i.st]?ST[i.st][1]:i.st)} <b>${esc(tt(i.t))}</b>${(i.st!=='good'&&sh(i.d))?`<br><span class="sub">${esc(sh(i.d))}</span>`:''}</li>`).join('')}</ul>`;
+  h+=`<section class="panel"><h2>手順2　三大原則</h2>
    <div class="row" style="margin-bottom:8px">
-     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-tate" ${STATE.flags.tate?'checked':''}>縦分離名（へんとつくりで左右に割れる字が多い）</label>
-     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-yoko" ${STATE.flags.yoko?'checked':''}>横分離名（かんむり等で上下に割れる字が多い）</label>
-     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-shibari" ${STATE.flags.shibari?'checked':''}>縛り（部首・偏旁の重複）</label>
+     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-tate" ${STATE.flags.tate?'checked':''}>縦分離名</label>
+     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-yoko" ${STATE.flags.yoko?'checked':''}>横分離名</label>
+     <label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="f-shibari" ${STATE.flags.shibari?'checked':''}>縛り</label>
    </div>
    <div class="grid">
-    <div class="card"><div class="hd"><span class="ttl">音（字音）</span>${stTag(sSt.音)}</div>${list(sound)}</div>
-    <div class="card"><div class="hd"><span class="ttl">形（字形）</span>${stTag(sSt.形)}</div>${list(shape)}</div>
-    <div class="card"><div class="hd"><span class="ttl">意味（字義）</span>${stTag(sSt.意味)}</div>${list(mean)}</div>
-    <div class="card" style="grid-column:1/-1"><div class="hd"><span class="ttl">字形の自動判定（辞書データの字の構造から）</span></div>
+    <div class="card"><div class="hd"><span class="ttl">音</span>${stTag(sSt.音)}</div>${list(sound)}</div>
+    <div class="card"><div class="hd"><span class="ttl">形</span>${stTag(sSt.形)}</div>${list(shape)}</div>
+    <div class="card"><div class="hd"><span class="ttl">意味</span>${stTag(sSt.意味)}</div>${list(mean)}</div>
+    <div class="card" style="grid-column:1/-1"><div class="hd"><span class="ttl">字形の自動判定</span></div>
      <p style="display:flex;flex-wrap:wrap;gap:6px 10px;margin:4px 0 10px">${strc.map(c=>`<span style="border:1px solid var(--line);border-radius:6px;padding:2px 10px"><b style="font-size:18px">${esc(c.ch)}</b> <span class="sub">${c.label}</span></span>`).join('')}</p>
      <ul class="pl">
       <li>${tag(allV?'warn':'none',allV?'候補あり':'なし')} <b>縦分離名</b><br><span class="sub">${allV?'全ての字が左右に割れるため、縦分離名の候補です（チェックを自動で入れました。違う場合は外してください）。':'全ての字が左右に割れているわけではありません。'}${(!allV&&seiAllV)?'姓の字が全て左右に割れています。名には、割れない字を選ぶのが原則です。':''}</span></li>
       <li>${tag(allH?'warn':'none',allH?'候補あり':'なし')} <b>横分離名</b><br><span class="sub">${allH?'全ての字が上下に割れるため、横分離名の候補です（チェックを自動で入れました。違う場合は外してください）。':'全ての字が上下に割れているわけではありません。'}</span></li>
-      <li>${tag(repeats.length?'warn':'none',repeats.length?'候補あり':'なし')} <b>縛り（部首・偏旁の重複）</b><br><span class="sub">${repeats.length?repeats.map(r=>esc(r.kind+'「'+r.comp+'」（'+r.chars.join('・')+'）')).join('　')+'。同じ部分が重なっています（チェックを自動で入れました。違う場合は外してください）。':'偏・つくり・冠の重複は見つかりません。'}</span></li>
+      <li>${tag(repeats.length?'warn':'none',repeats.length?'候補あり':'なし')} <b>縛り</b><br><span class="sub">${repeats.length?repeats.map(r=>esc(r.kind+'「'+r.comp+'」（'+r.chars.join('・')+'）')).join('　')+'。同じ部分が重なっています（チェックを自動で入れました。違う場合は外してください）。':'偏・つくり・冠の重複は見つかりません。'}</span></li>
      </ul></div>
    </div></section>`;
 
@@ -1143,28 +1151,26 @@ function render(){
     {name:'五行', w:20, st:gogyo.st},
     {name:'陰陽', w:20, st:inyou.st},
     {name:'天地・天底の配合', w:20, st:tenchi.st},
-    {name:'画数（格数）', w:10, st:kaku.st},
+    {name:'画数', w:10, st:kaku.st},
   ];
   const colors={good:'#1f7a4d',warn:'#c98a00',bad:'#b3261e',none:'#8d8a82'};
   h+=`<section class="panel"><h2>手順3　五大真理による統合評価</h2>
    <div class="bar">${truths.map(t=>`<div style="width:${t.w}%;background:${colors[t.st]}"><span class="bn">${t.name} </span>${t.w}%</div>`).join('')}</div>
    <div class="grid">`;
   // 読み下し
-  const hint = [...sound,...shape,...mean].filter(i=>i.st==='bad').map(i=>i.t);
-  h+=`<div class="card"><div class="hd"><span class="ttl">1　読み下し（30%）</span>${stTag(yomiSt)}</div>
+  const hint = [...sound,...shape,...mean].filter(i=>i.st==='bad').map(i=>tt(i.t));
+  h+=`<div class="card"><div class="hd"><span class="ttl">1　読み下し　30%</span>${stTag(yomiSt)}</div>
      ${hint.length?`<p class="sub">手順2で見つかった凶相：${esc(hint.join('、'))}</p>`:''}
      <select id="yomikudashi"><option value="auto" ${STATE.yomikudashi==='auto'?'selected':''}>手順2から自動</option><option value="none" ${STATE.yomikudashi==='none'?'selected':''}>未判定</option><option value="good" ${STATE.yomikudashi==='good'?'selected':''}>吉</option><option value="warn" ${STATE.yomikudashi==='warn'?'selected':''}>注意</option><option value="bad" ${STATE.yomikudashi==='bad'?'selected':''}>凶</option></select></div>`;
   // 五行
-  h+=`<div class="card"><div class="hd"><span class="ttl">2　五行（20%）</span>${stTag(gogyo.st)}</div>
-     <p>${esc(gogyo.line)}</p>${list(gogyo.items)}
-     ${gogyo.pairs.map(pr=>{ const d=GOGYO_PAIR[pr.a+pr.b]; if(!d) return ''; const kyo=truths.some(t=>t.st==='bad');
-       return `<details open><summary>${esc(pr.n)}　${pr.a}－${pr.b}</summary>${kyo?`<p><b>凶名の性質</b>：${esc(d[1])}<br><b>体質</b>：${esc(d[2])}</p>`:`<p><b>${d[3]?'準正名':'正名'}の性質</b>：${esc(d[0])}</p>`}</details>`; }).join('')}</div>`;
+  h+=`<div class="card"><div class="hd"><span class="ttl">2　五行　20%</span>${stTag(gogyo.st)}</div>
+     <p>${esc(gogyo.line)}</p>${list(gogyo.items)}</div>`;
   // 陰陽
-  h+=`<div class="card"><div class="hd"><span class="ttl">3　陰陽（20%）</span>${stTag(inyou.st)}</div>
+  h+=`<div class="card"><div class="hd"><span class="ttl">3　陰陽　20%</span>${stTag(inyou.st)}</div>
      <p class="yy">${esc(inyou.std)}</p><p class="sub">${all.map(c=>c.ch+c.n).join('　')}</p>
      ${inyou.notes.length?`<p class="sub">${esc(inyou.notes.join(' '))}</p>`:''}${list(inyou.items)}</div>`;
   // 天地天底
-  h+=`<div class="card"><div class="hd"><span class="ttl">4　天地・天底の配合（20%）</span>${stTag(tenchi.st)}</div>
+  h+=`<div class="card"><div class="hd"><span class="ttl">4　天地・天底の配合　20%</span>${stTag(tenchi.st)}</div>
      <h3>天地の配合　${stTag(tenchi.tenchi.st)}</h3>${list(tenchi.tenchi.items)}
      <h3>天底の配合　${stTag(tenchi.teitei.st)}</h3>${list(tenchi.teitei.items)}</div>`;
   // 画数
@@ -1175,11 +1181,11 @@ function render(){
     if(kyoNow && GCLS[r.k.g]==='good') return '<p class="sub">画数以外の真理に凶があるため、吉数の作用は十分に発揮されません。</p>';
     return '';
   };
-  const kLine = r => `<details open><summary>${r.n}　${r.v}画${r.v!==r.k.n?'（'+r.k.n+'画として）':''}　${r.role}　${tag(GCLS[r.k.g],GLAB[r.k.g])}　<b>${esc(r.k.base.l)}</b></summary><p>${esc(r.k.base.t)}</p>${kEff(r)}${(r.notes||[]).length?`<p class="sub">講義：${esc(r.notes.join(' '))}</p>`:''}</details>`;
-  h+=`<div class="card" style="grid-column:1/-1"><div class="hd"><span class="ttl">5　画数（10%）</span>${stTag(kaku.st)}</div>
+  const kLine = r => `<p>${r.n}　${r.v}画${r.v!==r.k.n?'（'+r.k.n+'画として）':''}　${r.role}　${tag(GCLS[r.k.g],GLAB[r.k.g])}　<b>${esc(r.k.base.l)}</b></p>`;
+  h+=`<div class="card" style="grid-column:1/-1"><div class="hd"><span class="ttl">5　画数　10%</span>${stTag(kaku.st)}</div>
      ${kaku.rows.map(kLine).join('')}
      <h3>参考（判定には使いません）</h3>
-     ${kaku.refs.map(r=>`<p>${r.n}　${r.v}画　${r.role}　${tag(GCLS[r.k.g],GLAB[r.k.g])}　<b>${esc(r.k.base.l)}</b><br><span class="sub">${esc(r.k.base.t)}</span></p>`).join('')}</div>`;
+     ${kaku.refs.map(r=>`<p>${r.n}　${r.v}画　${r.role}　${tag(GCLS[r.k.g],GLAB[r.k.g])}　<b>${esc(r.k.base.l)}</b></p>`).join('')}</div>`;
   h+=`</div>`;
   // 統合：凶が1つでも該当すれば凶名、どれも該当しなければ正名
   const badT = truths.filter(t=>t.st==='bad').map(t=>t.name);
@@ -1252,7 +1258,7 @@ function render(){
     '天地衝突':'凶。ケンカが激しく、上下関係に実がなく、いいところでやめてしまう。衝突数は3・5・9で、画数が大きくなるほど力が強く、揉めごとも大きくなる。衝突して理解し合えれば、よくなる可能性もある。',
     '天地相同数':'大大凶。姓名同数（天格と地格が同数）で、悪い意味で変わった人生になる。人格が同数のときは、問題ない。',
     '天底同数':'大凶。五大真理が崩れている名前だけで有効。社会運・家庭運が急変し、不慮の事故（難死）を誘発する。不良の事故にも注意。',
-    '人格接続部':'人格は、姓と名のつなぎで、中年期（数え28〜54歳）の運勢と、家系・社会・身近な人との接続部。ここが崩れると、家系や社内との軋轢、対人トラブル、組織や家族からの孤立が起こりやすい。',
+    '人格接続部':'人格は、姓と名のつなぎで、中年期　数え28〜54歳の運勢と、家系・社会・身近な人との接続部。ここが崩れると、家系や社内との軋轢、対人トラブル、組織や家族からの孤立が起こりやすい。',
     'ダークサイド効果':'力が大きいほど、悪く出たときの影響も大きくなる。吉数の強さが、そのまま、凶の強さに変わる。'
   };
   const KD={
@@ -1307,33 +1313,30 @@ function render(){
   };
   const sumG=[];   // {g:'真理名', rows:[{t,d,more}]}
   const addG=(g,t,d,more)=>{ let x=sumG.find(y=>y.g===g); if(!x){ x={g,rows:[]}; sumG.push(x); } x.rows.push({t,d,more:(more!==undefined&&more!==null&&more!=='')?more:moreFor(t)}); };
-  for(const [lbl,items] of [['手順2　音（字音）',sound],['手順2　形（字形）',shape],['手順2　意味（字義）',mean]]) for(const i of items) if(i.st==='bad') addG('読み下し（'+lbl+'）',i.t,i.d);
+  for(const [lbl,items] of [['音',sound],['形',shape],['意味',mean]]) for(const i of items) if(i.st==='bad') addG('読み下し　'+lbl,i.t,i.d);
   for(const i of gogyo.items) if(i.st==='bad') addG('五行',i.t,i.d);
   if(gogyo.st==='bad' && kyomei) for(const pr of gogyo.pairs){ const d=GOGYO_PAIR[pr.a+pr.b]; if(d) addG('五行',pr.n+'　'+pr.a+'－'+pr.b+'（凶名の性質と体質）','凶名の性質：'+d[1]+'　体質：'+d[2]); }
   for(const i of inyou.items) if(i.st==='bad') addG('陰陽',i.t,i.d);
   for(const i of [...tenchi.tenchi.items,...tenchi.teitei.items]) if(i.st==='bad') addG('天地・天底の配合',i.t,i.d);
-  for(const r of kaku.rows){ if(GCLS[r.k.g]==='bad'){ const b=r.k.base; addG('画数（格数）',`${r.n}　${r.v}画（${r.role}）　${b.l}`,b.t+((b.kyo&&kyoNow)?'　凶名の作用：'+b.kyo:'')); } }
-  if(dark) addG('画数（格数）','ダークサイド効果','強い吉数が、凶の真理により悪い方向へ強まります。');
+  for(const r of kaku.rows){ if(GCLS[r.k.g]==='bad'){ const b=r.k.base; addG('画数',`${r.n}　${r.v}画　${r.role}　${b.l}`,b.t+((b.kyo&&kyoNow)?'　凶名の作用：'+b.kyo:'')); } }
+  if(dark) addG('画数','ダークサイド効果','強い吉数が、凶の真理により悪い方向へ強まります。');
   if(kyomei){
-    h+=`<section class="panel" id="kyo-summary"><h2>総合評価（凶名）：凶の解説と、起こりやすいこと</h2>
-      ${sumG.length?sumG.map(x=>`<h3>${esc(x.g)}</h3><ul class="pl">${x.rows.map(r=>`<li>${tag('bad','凶')} <b>${esc(r.t)}</b><br><span class="sub">${esc(r.d)}</span>${r.more?`<br><span class="sub">${esc(r.more)}</span>`:''}</li>`).join('')}</ul>`).join(''):'<p class="sub">個別の凶の項目はありません（読み下しの手動指定などで凶名になっています）。</p>'}
-      <p class="sub">起こりやすいことは、講義資料にある象意をまとめたもので、必ず起こるという意味ではありません。</p></section>`;
+    h+=`<section class="panel" id="kyo-summary"><h2>総合評価　凶名</h2>
+      ${sumG.length?sumG.map(x=>`<h3>${esc(x.g)}</h3><ul class="pl">${x.rows.map(r=>`<li>${tag('bad','凶')} <b>${esc(tt(r.t))}</b></li>`).join('')}</ul>`).join(''):'<p class="sub">個別の凶の項目はありません（読み下しの手動指定などで凶名になっています）。</p>'}</section>`;
   } else {
     // ===== 総合評価（正名）：整っている点と、正名としての作用 =====
-    const okRow=(t,d)=>`<li>${tag('good','吉')} <b>${esc(t)}</b>${d?`<br><span class="sub">${esc(d)}</span>`:''}</li>`;
+    const okRow=(t,d)=>`<li>${tag('good','吉')} <b>${esc(tt(t))}</b></li>`;
     const goods=items=>items.filter(i=>i.st==='good').map(i=>okRow(i.t,i.d)).join('');
     const warns=[...sound,...shape,...mean,...gogyo.items,...inyou.items,...tenchi.tenchi.items,...tenchi.teitei.items].filter(i=>i.st==='warn');
     const pairHtml=gogyo.pairs.map(pr=>{ const d=GOGYO_PAIR[pr.a+pr.b]; return d?okRow(`${pr.n}　${pr.a}－${pr.b}（${d[3]?'準正名':'正名'}の性質）`,d[0]):''; }).join('');
-    const kakuHtml=kaku.rows.map(r=>{ const b=r.k.base; const eff=b.sho?'正名の作用：'+b.sho:''; return `<li>${tag(GCLS[r.k.g],GLAB[r.k.g])} <b>${esc(r.n)}　${r.v}画（${esc(r.role)}）　${esc(b.l)}</b><br><span class="sub">${esc(b.t)}</span>${eff?`<br><span class="sub">${esc(eff)}</span>`:''}</li>`; }).join('');
-    h+=`<section class="panel" id="sho-summary"><h2>総合評価（正名）：整っている点と、正名の作用</h2>
-      <p>五大真理（読み下し・五行・陰陽・天地・画数）のどれにも凶がなく、正名です。画数が持つ本来の吉作用が、打ち消されずに、そのまま出やすい名前です。</p>
+    const kakuHtml=kaku.rows.map(r=>{ const b=r.k.base; const eff=b.sho?'正名の作用：'+b.sho:''; return `<li>${tag(GCLS[r.k.g],GLAB[r.k.g])} <b>${esc(r.n)}　${r.v}画　${esc(r.role)}　${esc(b.l)}</b></li>`; }).join('');
+    h+=`<section class="panel" id="sho-summary"><h2>総合評価　正名</h2>
       <h3>読み下し（音・字形・字義）</h3><ul class="pl">${goods(sound)}${goods(shape)}${goods(mean)}</ul>
       <h3>五行</h3><ul class="pl">${goods(gogyo.items)}${pairHtml}</ul>
       <h3>陰陽</h3><ul class="pl">${goods(inyou.items)}</ul>
       <h3>天地・天底の配合</h3><ul class="pl">${goods(tenchi.tenchi.items)}${goods(tenchi.teitei.items)}</ul>
-      <h3>画数（格数）</h3><ul class="pl">${kakuHtml}</ul>
-      ${warns.length?`<h3>注意点（凶ではありませんが、気をつけたい点）</h3><ul class="pl">${warns.map(i=>`<li>${tag('warn','注意')} <b>${esc(i.t)}</b><br><span class="sub">${esc(i.d)}</span></li>`).join('')}</ul>`:''}
-      <p class="sub">整った形式は、方位や家相から得た運気を受け止める器になります。名前を日常で使い、心がけや行いを、その形に合わせていくことで、作用が現れやすくなります。</p></section>`;
+      <h3>画数</h3><ul class="pl">${kakuHtml}</ul>
+      ${warns.length?`<h3>注意点</h3><ul class="pl">${warns.map(i=>`<li>${tag('warn','注意')} <b>${esc(tt(i.t))}</b></li>`).join('')}</ul>`:''}</section>`;
   }
   box.innerHTML=verdictHtml+h; bind();
 }
