@@ -1064,7 +1064,7 @@ function render(){
     if(c.list.length>1) sel = `<br><select data-sel="${c.idx}">${c.list.map((x,i)=>`<option value="${i}" ${i===c.sel?'selected':''}>${x.n}画（${esc(x.c)}${x.k?' / '+esc(x.k):''}）p.${x.p}</option>`).join('')}</select>`;
     h+=`<tr><td class="ch">${esc(c.ch)}</td>
       <td>${c.part==='sei'?'姓':'名'}</td>
-      <td>${e&&e.k? esc(e.k):'<span class="sub">同じ字</span>'}</td>
+      <td>${e&&e.k? esc(e.k):(e&&e.kana&&!e.alpha&&/[ぁ-ゖ]/.test(c.ch)?'<span class="sub">'+esc(c.ch.replace(/[ぁ-ゖ]/g,x=>String.fromCharCode(x.charCodeAt(0)+0x60)))+'<br>カタカナ換算</span>':'<span class="sub">同じ字</span>')}</td>
       <td><input class="num" type="number" min="1" max="40" data-n="${c.idx}" value="${c.n??''}">${e&&e.f?'<br>'+tag('warn','要確認'):''}${e?'':'<br>'+tag('bad','辞典に無い')}${sel}</td>
       <td>${e?tag('none',e.g):'<span class="sub">-</span>'}</td>
       <td class="yy">${c.n!=null?yyMark(c.n):''}</td>
@@ -1072,6 +1072,11 @@ function render(){
       <td class="sub">${e?(e.alpha?(e.alpha==='0'?'数字':'英字'):e.kana?'仮名':`p.${e.p}`):''}</td></tr>`;
   }
   h+=`</tbody></table>`;
+  // 仮名・英字・数字は、字典の画数ではなく、講義の規則で数えている旨を書く
+  const hasKana = all.some(c=>c.entry&&c.entry.kana&&!c.entry.alpha), hasAlpha = all.some(c=>c.entry&&c.entry.alpha&&c.entry.alpha!=='0'), hasDigit = all.some(c=>/[0-9０-９]/.test(c.ch));
+  if(hasKana) h+=`<p class="sub">ひらがなの画数は、カタカナに直した字の画数で数えています。例：あ＝ア2画、き＝キ3画、ら＝ラ2画、ん＝ン2画。濁点は2画、半濁点は1画を足し、小書きの字（ゃ・ゅ・っなど）は、元の字と同じ画数です。カタカナで書いた名前も、同じ数え方です。この数え方は講義の規則で、字典に載る漢字の鑑定画数とは別です。</p>`;
+  if(hasAlpha) h+=`<p class="sub">アルファベットの画数は、講義レジュメの画数で数えています（A3・B3・C1・D2・E4など。小文字と全角は大文字として数えます）。五行は、読み（エー・ビー…）の最初の音の行です。</p>`;
+  if(hasDigit) h+=`<p class="sub">アラビア数字の画数は、漢数字の鑑定数で数えています（1＝1画、2＝2画、3＝3画、4＝5画、5＝4画、6＝4画、7＝2画、8＝2画、9＝2画、0＝1画）。</p>`;
   if(missing.length){
     h+=`<p>${tag('bad','画数が未確定の字があります')} 表の「画数」欄に入力すると、以降の判定が進みます。</p></section>`;
     box.innerHTML=h; bind(); return;
