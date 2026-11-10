@@ -1072,9 +1072,8 @@ function render(){
       <td class="sub">${e?(e.alpha?(e.alpha==='0'?'数字':'英字'):e.kana?'仮名':`p.${e.p}`):''}</td></tr>`;
   }
   h+=`</tbody></table>`;
-  // 仮名・英字・数字は、字典の画数ではなく、講義の規則で数えている旨を書く
-  const hasKana = all.some(c=>c.entry&&c.entry.kana&&!c.entry.alpha), hasAlpha = all.some(c=>c.entry&&c.entry.alpha&&c.entry.alpha!=='0'), hasDigit = all.some(c=>/[0-9０-９]/.test(c.ch));
-  if(hasKana) h+=`<p class="sub">ひらがなの画数は、カタカナに直した字の画数で数えています。例：あ＝ア2画、き＝キ3画、ら＝ラ2画、ん＝ン2画。濁点は2画、半濁点は1画を足し、小書きの字（ゃ・ゅ・っなど）は、元の字と同じ画数です。カタカナで書いた名前も、同じ数え方です。この数え方は講義の規則で、字典に載る漢字の鑑定画数とは別です。</p>`;
+  // 英字・数字は、字典の画数ではなく、講義の規則で数えている旨を書く（ひらがなは、鑑定字の欄にカタカナを出す）
+  const hasAlpha = all.some(c=>c.entry&&c.entry.alpha&&c.entry.alpha!=='0'), hasDigit = all.some(c=>/[0-9０-９]/.test(c.ch));
   if(hasAlpha) h+=`<p class="sub">アルファベットの画数は、講義レジュメの画数で数えています（A3・B3・C1・D2・E4など。小文字と全角は大文字として数えます）。五行は、読み（エー・ビー…）の最初の音の行です。</p>`;
   if(hasDigit) h+=`<p class="sub">アラビア数字の画数は、漢数字の鑑定数で数えています（1＝1画、2＝2画、3＝3画、4＝5画、5＝4画、6＝4画、7＝2画、8＝2画、9＝2画、0＝1画）。</p>`;
   if(missing.length){
