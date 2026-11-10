@@ -1085,7 +1085,7 @@ function render(){
     if(c.list.length>1) sel = `<br><select data-sel="${c.idx}">${c.list.map((x,i)=>`<option value="${i}" ${i===c.sel?'selected':''}>${x.n}画（${esc(x.c)}${x.k?' / '+esc(x.k):''}）p.${x.p}</option>`).join('')}</select>`;
     h+=`<tr><td class="ch">${esc(c.ch)}</td>
       <td>${c.part==='sei'?'姓':'名'}</td>
-      <td>${e&&e.k? esc(e.k):(e&&e.kana&&!e.alpha&&/[ぁ-ゖ]/.test(c.ch)?'<span class="sub">'+esc(c.ch.replace(/[ぁ-ゖ]/g,x=>String.fromCharCode(x.charCodeAt(0)+0x60)))+'<br>カタカナ換算</span>':'<span class="sub">同じ字</span>')}</td>
+      <td>${e&&e.k? esc(e.k):(e&&e.kana&&!e.alpha&&/[ぁ-ゖ]/.test(c.ch)?'<span class="sub">'+esc(c.ch.replace(/[ぁ-ゖ]/g,x=>String.fromCharCode(x.charCodeAt(0)+0x60)))+'</span>':'<span class="sub">同じ字</span>')}</td>
       <td><input class="num" type="number" min="1" max="40" data-n="${c.idx}" value="${c.n??''}">${e&&e.f?'<br>'+tag('warn','要確認'):''}${e?'':'<br>'+tag('bad','辞典に無い')}${sel}</td>
       <td>${e?tag('none',e.g):'<span class="sub">-</span>'}</td>
       <td class="yy">${c.n!=null?yyMark(c.n):''}</td>
