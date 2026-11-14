@@ -7,7 +7,7 @@
   横に割れる(H)：上下（⿱・⿳）の構造、または、左右の部品がすべて横に割れるもの
                  垂れ（⿸・⿹）は、まだれ（广）・がんだれ（厂）で、中が独立した字のものだけ（例：麻＝广＋林）
                  やまいだれ（疒）・しかばね（尸）などの他の垂れは横に割れない
-  ただし、安・正は横分離の例外として、Hから外す。
+  ただし、正は横分離の例外として、Hから外す。（安は、レジュメの横分離の例「安藤 麻希」に合わせて、Hに含める）
   中の字が独立しているかの判定は、中の部品が1字で、かつ辞書にある字かで行い、講義・資料で個別に示された字は TARE_H・TARE_NOT で上書きする。
 """
 import json, os, sys, urllib.request
@@ -89,7 +89,7 @@ def parts(ch):
     if op in '⿱⿳': a,b=comp(kids[0]),comp(kids[-1]); return ('v',a,b) if a and b else None
     return None
 v=''.join(c for c in chars if len(c)==1 and V(tree(c)))
-h=''.join(c for c in chars if len(c)==1 and ((H(tree(c)) and c not in TARE_NOT) or c in TARE_H) and c not in '安正')
+h=''.join(c for c in chars if len(c)==1 and ((H(tree(c)) and c not in TARE_NOT) or c in TARE_H) and c not in '正')
 pp={}
 for c in chars:
     if len(c)==1:
