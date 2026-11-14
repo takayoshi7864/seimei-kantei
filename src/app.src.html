@@ -793,8 +793,9 @@ function judgeInyou(seiN, meiN, honmei, flags){
   const bits=[...sb.b,...mb.b]; const key=bits.join('');
   const mk=a=>a.map(x=>x?'〇':'●').join('');
   const sRaw=seiN.map(n=>isYang(n)?1:0), mRaw=meiN.map(n=>isYang(n)?1:0);
+  const sDisp=sRaw.length===1?`（${mk(sRaw)}）${mk(sRaw)}`:mk(sRaw);
   const mDisp=mRaw.length===1?`${mk(mRaw)}（${mk(mRaw)}）`:mk(mRaw);
-  const stdStr=`${mk(sRaw)}｜${mDisp}`;
+  const stdStr=`${sDisp}｜${mDisp}`;
   let [name,cls,desc]=INYOU_PAT[key];
   // 名が3字で、陰陽が互い違い（〇●〇・●〇●）のときの型（講義レジュメ p.11・12 の右側の図）
   if(mRaw.length===3 && mRaw[0]!==mRaw[1] && mRaw[1]!==mRaw[2] && sb.b[1]===mRaw[0]){
