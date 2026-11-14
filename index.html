@@ -793,22 +793,20 @@ function judgeInyou(seiN, meiN, honmei, flags){
   const bits=[...sb.b,...mb.b]; const key=bits.join('');
   const mk=a=>a.map(x=>x?'〇':'●').join('');
   const sRaw=seiN.map(n=>isYang(n)?1:0), mRaw=meiN.map(n=>isYang(n)?1:0);
-  const rawStr=`${mk(sRaw)}｜${mk(mRaw)}`;                     // 全ての字の陰陽（姓｜名）
-  const redStr=`${mk(sb.b)}｜${mk(mb.b)}`;                      // 判定に使う見立て（2字＋2字）
-  const stdStr = rawStr===redStr ? rawStr : `${rawStr}　（見立て：${redStr}）`;
-  let [name,cls,desc]=INYOU_PAT[key]; let notes_extra='';
+  const mDisp=mRaw.length===1?`${mk(mRaw)}（${mk(mRaw)}）`:mk(mRaw);
+  const stdStr=`${mk(sRaw)}｜${mDisp}`;
+  let [name,cls,desc]=INYOU_PAT[key];
   // 名が3字で、陰陽が互い違い（〇●〇・●〇●）のときの型（講義レジュメ p.11・12 の右側の図）
   if(mRaw.length===3 && mRaw[0]!==mRaw[1] && mRaw[1]!==mRaw[2] && sb.b[1]===mRaw[0]){
     if(sb.b[0]===sb.b[1]){ name='縛り（名3字）'; cls='bad'; desc='姓と名の頭が同じ陰陽で続き、名の中で互い違いになる型（例：●●｜●〇●）。後ろ髪を引かれている状態で、自由に言えず、自由に行動できない。対人関係に難が出やすく、6割で崩れるとされる。'; }
     else { name='大挟み'; cls='bad'; desc=INYOU_PAT['1001'][2]+'（名3字の型：例 〇●｜●〇●）'; }
-    notes_extra='名が3字で互い違いのため、レジュメの3字の図の型で判定しました。';
   }
   // 二重挟み（レジュメp.13）：地数の陰陽が、上（姓の全字）と下（名の2文字目以降）の、同じ陰陽に挟まれている。姓2字以上、名3字以上
   { const sa=seiN.map(n=>isYang(n)?1:0), ma=meiN.map(n=>isYang(n)?1:0);
     if(sa.length>=2 && sa.every(v=>v===sa[0]) && ma.length>=3 && ma[0]!==sa[0] && ma.slice(1).every(v=>v===sa[0])){
       name='二重挟み'; cls='bad';
       desc='陰陽の並びの、まれな凶相（全体の1〜2%）。地数の陰陽が、上（姓）と下（名の2文字目以降）の、同じ陰陽に、二重に挟まれている。常識では考えられないような、数奇な人生になる。普通の人とは違う人生で、小説のモデルになるような波乱の経験をする。大挟みのような苦労ではなく、とても変わった人生。周りの人や家族はついていくのが大変で、本人は独特の感覚を持ち、周りからは宇宙人のようにズレて見られる。正名に整えると、その独特の感覚が、独自の世界観や芸術的な才能として、高く評価されるようになる。'; } }
-  const items=[]; const notes=[sb.note&&('姓：'+sb.note), !notes_extra&&mb.note&&('名：'+mb.note), notes_extra].filter(Boolean);
+  const items=[]; const notes=[];
   items.push({st:cls,t:name,d:desc});
   if(meiN.length===1) items.push({st:'bad',t:'一文字名前',d:'名前だけでは陽と陰の対を作れず、命が半分の状態。若年期に急成功してもエネルギーを使い果たして不安定になる。原理的に凶相（原則使用不可）。'});
   const star = honmei? honmei.slice(0,2):'';
